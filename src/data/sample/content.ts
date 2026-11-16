@@ -3,7 +3,7 @@
  * Sirven solo para maquetar. Se reemplazarán por el contenido real
  * administrado desde el panel (Fase 4). Todos llevan `isSample: true`.
  */
-import type { BandMember, NewsPost, Release, Show, Video } from "@/lib/types";
+import type { BandMember, NewsPost, Release, Show } from "@/lib/types";
 
 const tracks = (n: number) =>
   Array.from({ length: n }, (_, i) => ({
@@ -57,14 +57,6 @@ export const sampleReleases: Release[] = [
     isFeatured: false,
     isSample: true,
   },
-];
-
-export const sampleVideos: Video[] = [
-  { slug: "video-ejemplo-1", title: "Videoclip oficial de ejemplo", youtubeId: null, thumbnailUrl: null, publishedAt: "2026-10-24T18:00:00.000Z", isFeatured: true, isSample: true },
-  { slug: "video-ejemplo-2", title: "Video en vivo de ejemplo", youtubeId: null, thumbnailUrl: null, publishedAt: "2026-05-02T18:00:00.000Z", isFeatured: false, isSample: true },
-  { slug: "video-ejemplo-3", title: "Lyric video de ejemplo", youtubeId: null, thumbnailUrl: null, publishedAt: "2025-07-11T18:00:00.000Z", isFeatured: false, isSample: true },
-  { slug: "video-ejemplo-4", title: "Detrás de cámaras (ejemplo)", youtubeId: null, thumbnailUrl: null, publishedAt: "2025-06-13T18:00:00.000Z", isFeatured: false, isSample: true },
-  { slug: "video-ejemplo-5", title: "Videoclip de ejemplo II", youtubeId: null, thumbnailUrl: null, publishedAt: "2024-03-08T18:00:00.000Z", isFeatured: false, isSample: true },
 ];
 
 /** Recintos y fechas ficticios. Fechas relativas a nov-2026 para ver ambos estados. */

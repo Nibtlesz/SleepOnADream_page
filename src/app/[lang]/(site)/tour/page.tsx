@@ -34,7 +34,7 @@ export default async function TourPage() {
       {jsonLd.length > 0 && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       )}
-      <PageHeader eyebrow={t.tour.eyebrow} title="Tour" intro={t.tour.intro} />
+      <PageHeader eyebrow={t.tour.eyebrow} title={t.nav.tour} intro={t.tour.intro} />
       <section className="container-site py-16 md:py-24" aria-labelledby="upcoming">
         <h2 id="upcoming" className="eyebrow mb-6">{t.tour.upcoming} ({upcoming.length})</h2>
         {upcoming.length ? (

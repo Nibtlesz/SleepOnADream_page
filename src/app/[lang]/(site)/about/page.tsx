@@ -33,7 +33,7 @@ export default async function AboutPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
         <div className="container-site relative flex min-h-[80svh] flex-col justify-end pb-16 md:pb-24">
           <p className="eyebrow mb-5 flex items-center gap-3"><span className="h-px w-8 bg-blood" aria-hidden />{a.eyebrow}</p>
-          <h1 className="display text-[clamp(3.5rem,12vw,10rem)]">About</h1>
+          <h1 className="display text-[clamp(3.5rem,12vw,10rem)]">{t.nav.about}</h1>
         </div>
       </header>
 

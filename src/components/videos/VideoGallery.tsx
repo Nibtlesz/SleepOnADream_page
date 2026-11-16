@@ -10,12 +10,28 @@ import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
 import type { Video } from "@/lib/types";
 
+/**
+ * Miniatura: la personalizada, o la de YouTube en HD. No todos los videos tienen versión HD
+ * (maxresdefault), así que si falla se usa la estándar (hqdefault), que siempre existe.
+ */
 function Thumb({ video, className }: { video: Video; className?: string }) {
-  const src = video.thumbnailUrl ?? (video.youtubeId ? `https://i.ytimg.com/vi/${video.youtubeId}/maxresdefault.jpg` : null);
+  const [hdFailed, setHdFailed] = useState(false);
+  const yt = video.youtubeId ? `https://i.ytimg.com/vi/${video.youtubeId}/${hdFailed ? "hqdefault" : "maxresdefault"}.jpg` : null;
+  const src = video.thumbnailUrl ?? yt;
   return (
     <div className={cn("relative aspect-video overflow-hidden bg-[radial-gradient(ellipse_at_30%_30%,#3a050b_0%,#0e0e10_70%)]", className)}>
       {src ? (
-        <Image src={src} alt="" fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+        <Image
+          key={src}
+          src={src}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 33vw, 100vw"
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
+          onError={() => {
+            if (!video.thumbnailUrl && !hdFailed) setHdFailed(true);
+          }}
+        />
       ) : (
         <span className="display absolute inset-0 grid place-items-center text-3xl text-bone/10 md:text-5xl" aria-hidden>
           SOAD

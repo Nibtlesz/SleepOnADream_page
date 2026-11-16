@@ -9,7 +9,8 @@ import { config } from "dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { sampleCategories, sampleProducts } from "../src/data/sample/catalog";
-import { sampleMembers, sampleNews, sampleReleases, sampleShows, sampleVideos } from "../src/data/sample/content";
+import { officialVideos } from "../src/data/official/videos";
+import { sampleMembers, sampleNews, sampleReleases, sampleShows } from "../src/data/sample/content";
 import { sampleDiscounts } from "../src/data/sample/discounts";
 import { SHIPPING_ZONES } from "../src/config/store";
 import { hashPassword, PASSWORD_MIN_LENGTH } from "../src/server/auth/password";
@@ -89,10 +90,18 @@ async function main() {
       },
     });
   }
-  for (const v of sampleVideos) {
-    await db.video.create({
-      data: { slug: v.slug, title: v.title, youtubeId: v.youtubeId, publishedAt: new Date(v.publishedAt), isFeatured: v.isFeatured, published: true, isSample: true },
-    });
+  // Videos oficiales: se crean o actualizan por slug (los de ejemplo ya se eliminaron arriba).
+  for (const v of officialVideos) {
+    const data = {
+      title: v.title,
+      youtubeId: v.youtubeId,
+      thumbnailUrl: v.thumbnailUrl,
+      publishedAt: new Date(v.publishedAt),
+      isFeatured: v.isFeatured,
+      published: true,
+      isSample: false,
+    };
+    await db.video.upsert({ where: { slug: v.slug }, create: { slug: v.slug, ...data }, update: data });
   }
   await db.show.deleteMany({ where: { isSample: true } });
   for (const s of sampleShows) {

@@ -1,20 +1,30 @@
 /** Textos de la interfaz en español (idioma predeterminado). */
 const es = {
+  /** Nombres de las secciones (menú, footer y títulos de página). */
+  nav: {
+    home: "Inicio",
+    music: "Música",
+    videos: "Videos",
+    tour: "Conciertos",
+    store: "Tienda",
+    about: "Nosotros",
+    contact: "Contacto",
+  },
   meta: {
     title: "Sleep On a Dream — Sitio oficial",
     description: "Sitio oficial de Sleep On a Dream: música, videos, fechas de concierto y tienda oficial.",
-    music: { title: "Music", description: "Discografía de Sleep On a Dream: álbumes, EPs y sencillos." },
+    music: { title: "Música", description: "Discografía de Sleep On a Dream: álbumes, EPs y sencillos." },
     videos: { title: "Videos", description: "Videoclips oficiales, sesiones en vivo y más de Sleep On a Dream." },
-    tour: { title: "Tour", description: "Fechas de concierto de Sleep On a Dream y boletos." },
+    tour: { title: "Conciertos", description: "Fechas de concierto de Sleep On a Dream y boletos." },
     store: {
-      title: "Store",
+      title: "Tienda",
       description: "Tienda oficial de Sleep On a Dream: playeras, sudaderas, música física y ediciones exclusivas. Envíos a todo México.",
     },
     about: {
-      title: "About",
+      title: "Nosotros",
       description: "Historia, biografía e integrantes de Sleep On a Dream. Información para prensa y contrataciones.",
     },
-    contact: { title: "Contact", description: "Contacto, contrataciones y prensa de Sleep On a Dream." },
+    contact: { title: "Contacto", description: "Contacto, contrataciones y prensa de Sleep On a Dream." },
     cart: "Carrito",
     checkout: "Checkout",
     order: "Tu pedido",
