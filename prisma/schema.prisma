@@ -1,0 +1,473 @@
+// Esquema de datos — Sleep On a Dream
+// Fase 1: definición completa del modelo. Las migraciones se aplican en la Fase 4.
+// Convenciones:
+//   * Montos monetarios en CENTAVOS de MXN (Int) para evitar errores de redondeo.
+//   * Nunca se almacenan datos de tarjeta: solo IDs del proveedor de pagos.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────
+// Autenticación y administración (Auth.js)
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  EDITOR // contenido: música, videos, tour, about
+  STORE_MANAGER // productos, inventario, pedidos
+  ADMIN // todo, incluidos usuarios y configuración
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role            @default(CUSTOMER)
+  accounts      Account[]
+  sessions      Session[]
+  auditLogs     AdminAuditLog[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+/// Registro inmutable de acciones administrativas.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String // p. ej. "product.update", "order.status_change"
+  entityType String
+  entityId   String
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Contenido de la banda
+// ─────────────────────────────────────────────────────────────
+
+enum ReleaseType {
+  ALBUM
+  EP
+  SINGLE
+}
+
+model Release {
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  title           String
+  type            ReleaseType
+  releaseDate     DateTime
+  description     String?     @db.Text
+  coverImageUrl   String?
+  spotifyUrl      String?
+  appleMusicUrl   String?
+  youtubeMusicUrl String?
+  embedUrl        String? // reproductor integrado (Spotify / YouTube)
+  isFeatured      Boolean     @default(false)
+  published       Boolean     @default(false)
+  tracks          Track[]
+  videos          Video[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([published, releaseDate])
+}
+
+model Track {
+  id        String  @id @default(cuid())
+  releaseId String
+  release   Release @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  position  Int
+  title     String
+  durationS Int?
+
+  @@unique([releaseId, position])
+}
+
+model Video {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  youtubeId    String
+  thumbnailUrl String? // miniatura personalizada; si es null se usa la de YouTube
+  publishedAt  DateTime
+  isFeatured   Boolean  @default(false)
+  published    Boolean  @default(false)
+  releaseId    String?
+  release      Release? @relation(fields: [releaseId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+enum ShowStatus {
+  SCHEDULED
+  SOLD_OUT
+  CANCELLED
+  POSTPONED
+}
+
+/// Los eventos pasados se calculan por fecha (startsAt < ahora) y se muestran
+/// en el historial; no se requiere un proceso que los "mueva".
+model Show {
+  id        String     @id @default(cuid())
+  startsAt  DateTime
+  timezone  String     @default("America/Mexico_City")
+  city      String
+  state     String
+  country   String     @default("MX")
+  venue     String
+  posterUrl String?
+  ticketUrl String?
+  notes     String?    @db.Text
+  status    ShowStatus @default(SCHEDULED)
+  published Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([published, startsAt])
+}
+
+model BandMember {
+  id       String  @id @default(cuid())
+  name     String
+  role     String
+  bio      String? @db.Text
+  photoUrl String?
+  position Int     @default(0)
+  active   Boolean @default(true)
+}
+
+model NewsPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  body        String   @db.Text
+  imageUrl    String?
+  publishedAt DateTime
+  published   Boolean  @default(false)
+}
+
+/// Pares clave-valor para textos editables (biografía, historia, contacto, portada).
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String
+  width     Int?
+  height    Int?
+  usage     String? // "hero", "press", "gallery"...
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Comunidad
+// ─────────────────────────────────────────────────────────────
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  consentAt      DateTime  @default(now()) // LFPDPPP: consentimiento expreso
+  confirmedAt    DateTime? // doble opt-in
+  unsubscribedAt DateTime?
+  source         String?
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  topic     String // general | booking | press | store
+  message   String   @db.Text
+  ip        String?
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Tienda
+// ─────────────────────────────────────────────────────────────
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE // visible y a la venta
+  COMING_SOON
+  ARCHIVED
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  position Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  name        String
+  description String           @db.Text
+  basePrice   Int // centavos MXN
+  compareAt   Int? // precio anterior, para mostrar descuento
+  status      ProductStatus    @default(DRAFT)
+  isExclusive Boolean          @default(false)
+  isBundle    Boolean          @default(false)
+  categoryId  String
+  category    Category         @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  variants    ProductVariant[]
+  related     Product[]        @relation("RelatedProducts")
+  relatedOf   Product[]        @relation("RelatedProducts")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status, categoryId])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String
+  position  Int     @default(0)
+}
+
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku        String      @unique
+  size       String? // XS, S, M, L, XL, 2XL, Única
+  color      String?
+  price      Int? // override del precio base (centavos)
+  stock      Int         @default(0) // se decrementa con UPDATE ... WHERE stock >= qty
+  orderItems OrderItem[]
+
+  @@unique([productId, size, color])
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED // centavos
+  FREE_SHIPPING
+}
+
+model DiscountCode {
+  id             String       @id @default(cuid())
+  code           String       @unique // guardado en MAYÚSCULAS
+  type           DiscountType
+  value          Int
+  minSubtotal    Int? // centavos
+  maxRedemptions Int?
+  redemptions    Int          @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  active         Boolean      @default(true)
+  orders         Order[]
+}
+
+model ShippingZone {
+  id      String         @id @default(cuid())
+  name    String // "Centro", "Norte", "Sur", "Internacional"
+  country String         @default("MX")
+  states  String[] // claves de estado (p. ej. "CDMX", "JAL")
+  rates   ShippingRate[]
+}
+
+model ShippingRate {
+  id         String       @id @default(cuid())
+  zoneId     String
+  zone       ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  name       String // "Estándar", "Express"
+  price      Int // centavos
+  freeOver   Int? // envío gratis a partir de este subtotal (centavos)
+  etaDaysMin Int
+  etaDaysMax Int
+  active     Boolean      @default(true)
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  phone     String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PREPARING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model Order {
+  id                  String              @id @default(cuid())
+  number              Int                 @unique @default(autoincrement()) // folio visible: SOAD-000123
+  /// Clave de idempotencia generada en el checkout: evita pedidos duplicados por doble clic o reintentos.
+  idempotencyKey      String              @unique
+  /// Token aleatorio para que el comprador consulte su pedido sin cuenta (URL de confirmación).
+  accessToken         String              @unique
+  paymentMethod       String // "mercadopago" (aún sin elegir) | "card" | "oxxo" | "spei" | "test"
+  /// Instrucciones para pagos diferidos (ficha OXXO, CLABE SPEI). Nunca datos de tarjeta.
+  paymentInstructions Json?
+  status              OrderStatus         @default(PENDING_PAYMENT)
+  customerId          String
+  customer            Customer            @relation(fields: [customerId], references: [id])
+  email               String
+  shippingAddress     Json // nombre, calle, número, colonia, CP, ciudad, estado, país, teléfono
+  shippingRateName    String
+  subtotal            Int
+  discountTotal       Int                 @default(0)
+  shippingTotal       Int
+  total               Int
+  currency            String              @default("MXN")
+  discountCodeText    String? // código tal como se aplicó (instantánea)
+  discountCodeId      String?
+  discountCode        DiscountCode?       @relation(fields: [discountCodeId], references: [id])
+  items               OrderItem[]
+  payments            Payment[]
+  shipments           Shipment[]
+  statusHistory       OrderStatusChange[]
+  /// Reserva de inventario: si el pago no se confirma antes de esta fecha, se libera el stock.
+  reservedUntil       DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+model OrderItem {
+  id           String         @id @default(cuid())
+  orderId      String
+  order        Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId    String
+  variant      ProductVariant @relation(fields: [variantId], references: [id])
+  // Instantánea al momento de la compra (los productos pueden cambiar después)
+  productName  String
+  variantLabel String
+  unitPrice    Int
+  quantity     Int
+}
+
+model OrderStatusChange {
+  id        String       @id @default(cuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  from      OrderStatus?
+  to        OrderStatus
+  note      String?
+  actorId   String? // null = sistema / webhook
+  createdAt DateTime     @default(now())
+}
+
+enum PaymentProvider {
+  MERCADOPAGO
+  STRIPE
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+  CANCELLED
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  orderId           String
+  order             Order           @relation(fields: [orderId], references: [id])
+  provider          PaymentProvider
+  providerPaymentId String          @unique
+  status            PaymentStatus   @default(PENDING)
+  amount            Int
+  method            String? // "card", "oxxo", "spei"... (nunca datos de tarjeta)
+  raw               Json? // respuesta del proveedor sin datos sensibles
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+/// Eventos de webhook ya procesados: garantiza idempotencia ante reenvíos del proveedor.
+model PaymentEvent {
+  id              String          @id @default(cuid())
+  provider        PaymentProvider
+  providerEventId String
+  type            String
+  processedAt     DateTime        @default(now())
+
+  @@unique([provider, providerEventId])
+}
+
+model Shipment {
+  id             String    @id @default(cuid())
+  orderId        String
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  carrier        String // "Estafeta", "DHL", "FedEx", "Correos de México"...
+  trackingNumber String
+  trackingUrl    String?
+  shippedAt      DateTime  @default(now())
+  deliveredAt    DateTime?
+  notifiedAt     DateTime? // correo de "pedido enviado" al comprador
+}

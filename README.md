@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sleep On a Dream — Sitio oficial
 
-## Getting Started
+Sitio oficial de la banda con música, videos, fechas de concierto y tienda en línea propia.
 
-First, run the development server:
+> ⚠️ Todo el contenido actual (lanzamientos, fechas, integrantes, productos, precios) es **de ejemplo**
+> y está marcado visualmente como tal. No es información oficial de la banda.
+
+## Requisitos
+
+- Node.js 22+
+- PostgreSQL 15+ (necesario a partir de la Fase 4; el sitio funciona sin él con datos de ejemplo)
+
+## Desarrollo
 
 ```bash
+cp .env.example .env.local
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Códigos de descuento de prueba: `EJEMPLO10` (10 %) y `ENVIOGRATIS` (mínimo $800).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+En desarrollo, el paso de pago ofrece **"Pago de prueba (simulado)"**, que confirma el pedido sin cobrar.
+No existe en producción. Sin base de datos, los pedidos se guardan en memoria y se pierden al reiniciar.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Script | Descripción |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Genera el cliente de Prisma y compila para producción |
+| `npm run lint` / `npm run typecheck` | Calidad de código |
+| `npm run db:migrate` | Aplica migraciones de Prisma (requiere `DATABASE_URL`) |
+| `npm run db:studio` | Explorador de la base de datos |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentación
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Arquitectura, flujo de la tienda, seguridad y fases](docs/ARQUITECTURA.md)
