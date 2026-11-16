@@ -291,6 +291,8 @@ const prismaRepo: OrderRepository = {
     return prismaRepo.findById(orderId);
   },
   async recordEvent(provider, eventId) {
+    // Los pagos de prueba (solo desarrollo) no son eventos de un proveedor real.
+    if (provider === "TEST") return true;
     try {
       await getDb().paymentEvent.create({
         data: { provider: provider as "MERCADOPAGO" | "STRIPE", providerEventId: eventId, type: "payment" },

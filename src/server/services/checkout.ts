@@ -10,11 +10,12 @@
  *  4. El pago solo se confirma por webhook verificado (o pago de prueba en desarrollo).
  */
 import "server-only";
-import { randomBytes, randomUUID } from "node:crypto";
+import { revalidateTag } from "next/cache";
+import { randomBytes } from "node:crypto";
 import { storeConfig } from "@/config/store";
 import type { OrderRecord } from "@/lib/orders";
 import type { CheckoutInput, MercadoPagoSubmission } from "@/lib/validation/checkout";
-import { findVariantsForQuote } from "@/server/queries/catalog";
+import { CATALOG_TAG, findVariantsForQuote } from "@/server/queries/catalog";
 import { isMethodEnabled } from "@/server/payments/config";
 import {
   createMercadoPagoPayment,
@@ -44,8 +45,8 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
       return { ok: false, error: "order_expired", message: "Tu reserva expiró. Vuelve a intentar el pago para apartar de nuevo tus productos." };
     }
     // Reintento de pago (p. ej. otra tarjeta tras un rechazo) sobre el mismo pedido.
-    if (existing.status === "PENDING_PAYMENT" && input.paymentMethod !== "test" && !existing.paymentInstructions) {
-      return payWithMercadoPago(existing, input);
+    if (existing.status === "PENDING_PAYMENT" && !existing.paymentInstructions) {
+      return input.paymentMethod === "test" ? payWithTest(existing) : payWithMercadoPago(existing, input);
     }
     return { ok: true, order: existing, next: "confirmation" };
   }
@@ -108,6 +109,7 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
       reservedUntil: new Date(Date.now() + storeConfig.reservationMinutes * 60_000).toISOString(),
       paymentInstructions: null,
     });
+    revalidateTag(CATALOG_TAG, "max"); // el inventario visible en la tienda cambió
   } catch (e) {
     if (e instanceof OutOfStockError) {
       const fresh = await quoteCart({ items: input.items, code: input.code, state: input.address.state, rateId: input.rateId });
@@ -117,19 +119,18 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
   }
 
   // 4) Pago
-  if (input.paymentMethod === "test") {
-    // Simula exactamente lo que haría un webhook aprobado.
-    await applyPaymentResult({
-      orderId: order.id,
-      result: "approved",
-      eventId: `test-${randomUUID()}`,
-      payment: { provider: "TEST", providerPaymentId: `test-${order.number}`, amount: order.total, method: "test" },
-    });
-    order = (await orders.findById(order.id)) ?? order;
-  }
-  if (input.paymentMethod !== "test") return payWithMercadoPago(order, input);
+  return input.paymentMethod === "test" ? payWithTest(order) : payWithMercadoPago(order, input);
+}
 
-  return { ok: true, order, next: "confirmation" };
+/** Pago simulado (solo fuera de producción): recorre el mismo camino que un webhook aprobado. */
+async function payWithTest(order: OrderRecord): Promise<CheckoutResult> {
+  await applyPaymentResult({
+    orderId: order.id,
+    result: "approved",
+    eventId: null,
+    payment: { provider: "TEST", providerPaymentId: `test-${order.number}`, amount: order.total, method: "test" },
+  });
+  return { ok: true, order: (await orders.findById(order.id)) ?? order, next: "confirmation" };
 }
 
 /**

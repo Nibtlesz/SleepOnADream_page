@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
+    "db:dev": "NODE_OPTIONS=--experimental-sqlite prisma dev -d --name soad",
+    "user:create": "tsx scripts/create-user.ts"
   },
   "dependencies": {
     "@mercadopago/sdk-react": "^1.0.7",

@@ -10,8 +10,8 @@
 | Estado del carrito | Zustand + `persist` (localStorage) |
 | Validación | Zod 4 (esquemas compartidos cliente/servidor) |
 | Base de datos | PostgreSQL + Prisma 7 (`@prisma/adapter-pg`) |
-| Autenticación (Fase 4) | Auth.js con roles (`ADMIN`, `STORE_MANAGER`, `EDITOR`, `CUSTOMER`) |
-| Pagos (Fase 5) | Mercado Pago (Payment Brick) o Stripe (Payment Element) |
+| Autenticación | Sesiones propias en PostgreSQL (scrypt + cookie httpOnly) con roles `ADMIN`, `STORE_MANAGER`, `EDITOR` |
+| Pagos | Mercado Pago: Payment Brick (tarjetas, OXXO/efectivo) + API de pagos (SPEI) + webhooks |
 | Correo (Fase 5) | Proveedor vía API (Resend / Postmark / SES) |
 | Imágenes (Fase 4) | Almacenamiento de objetos S3-compatible (S3 / Cloudflare R2) + `next/image` |
 
@@ -31,7 +31,9 @@ src/
       legal/[slug]/        Aviso de privacidad, términos, envíos y devoluciones
     api/cart/quote/        POST: cotización autoritativa del carrito
     sitemap.ts robots.ts
-    (admin)/  ← Fase 4: panel administrativo con layout propio
+    admin/                 Panel: login/, (panel)/ (resumen, pedidos, productos, descuentos,
+                           conciertos, música, videos, bitácora) y actions/ (Server Actions)
+  proxy.ts                 Redirección optimista de /admin sin sesión
   components/
     layout/                Header, footer, logo, redes
     ui/                    Botones, encabezados, Reveal (animación), arte provisional
@@ -49,6 +51,9 @@ src/
   server/
     queries/               Lectura de datos con `"use cache"` + `cacheTag`
     services/              Lógica de negocio (cotización, correo; luego checkout, webhooks)
+    auth/                  Contraseñas, sesiones, permisos por rol y DAL (requireAdmin)
+    admin/                 Consultas del panel (estadísticas, productos)
+    audit.ts               Bitácora de acciones administrativas
     rate-limit.ts          Límite por IP (cambiar a Redis en multi-instancia)
   store/cart.ts            Carrito persistente (cliente)
 ```
@@ -84,13 +89,23 @@ Formularios/API   →  server/services (reglas de negocio)  →  Prisma / provee
      El stock queda apartado hasta `reservedUntil` (30 min).
    - Se guarda una instantánea de nombre, variante y precio de cada producto.
    - La confirmación se consulta con un `accessToken` aleatorio (no con el número de pedido).
-5. **Pago:** solo se confirma desde `applyPaymentResult` (`src/server/services/payments.ts`), que llaman
-   - el webhook verificado `POST /api/webhooks/mercadopago`: valida la firma HMAC `x-signature` con
-     ventana de 5 min, consulta el pago en la API de Mercado Pago (no confía en el cuerpo), registra el
-     evento en `PaymentEvent` (idempotente) y comprueba que el monto coincida con el total del pedido;
-   - el **pago de prueba**, disponible solo fuera de producción, que recorre exactamente el mismo camino.
-   Con el pago aprobado: `PENDING_PAYMENT → PAID`, historial en `OrderStatusChange` y correo al comprador.
-   Pago rechazado: el pedido se cancela y el inventario se libera.
+5. **Pago con Mercado Pago** (`src/server/payments/mercadopago.ts`):
+   - **Tarjeta y efectivo (OXXO, Paycash, cajeros):** el Payment Brick (`@mercadopago/sdk-react`) captura
+     los datos en iframes de Mercado Pago y entrega un token de un solo uso. El servidor crea el pago con
+     `POST /v1/payments` usando el **total del pedido calculado en el servidor** (se ignora cualquier
+     monto del navegador), `external_reference = order.id`, `notification_url` y `X-Idempotency-Key`
+     único por intento.
+   - **SPEI:** en México el Brick no ofrece transferencia, así que el servidor crea el pago con
+     `payment_method_id: "clabe"` y el comprador recibe referencia e instrucciones.
+   - **Resultado inmediato:** `approved` confirma el pedido; `pending` (OXXO/SPEI/revisión) guarda las
+     instrucciones y extiende la reserva hasta que vence la ficha; `rejected` deja el pedido pendiente
+     para reintentar con otro medio sobre el **mismo** pedido e inventario.
+   - **Webhook `POST /api/webhooks/mercadopago`:** valida la firma HMAC `x-signature` (ventana de
+     5 min), consulta el pago en la API (no confía en el cuerpo), registra el evento en `PaymentEvent`
+     (idempotente) y comprueba que el monto coincida. Así se acreditan OXXO y SPEI cuando el cliente paga.
+   - Todo pago aprobado pasa por `applyPaymentResult` (`src/server/services/payments.ts`): el webhook,
+     la respuesta inmediata y el pago de prueba (solo fuera de producción) usan el mismo camino.
+     Un pago aprobado para un pedido ya cancelado se marca para revisión/reembolso.
 6. **Expiración:** `GET /api/cron/expire-orders` (protegido con `CRON_SECRET`) cancela pedidos no
    pagados a tiempo y libera inventario; además se ejecuta antes de cada checkout.
 
@@ -100,13 +115,19 @@ probar el flujo con los datos de ejemplo.
 Estados de pedido: `PENDING_PAYMENT → PAID → PREPARING → SHIPPED → DELIVERED`, además de
 `CANCELLED` y `REFUNDED`.
 
-### Pendiente para cobrar de verdad (Fase 5)
+### Puesta en marcha de Mercado Pago
 
-- Montar el componente seguro del proveedor en el paso 5 (Payment Brick de Mercado Pago o Payment
-  Element de Stripe) y crear el pago en el servidor con `external_reference = order.id`.
-- Activar tarjeta / OXXO / SPEI (`PROVIDER_INTEGRATED` en `src/server/payments/config.ts`).
-- Webhook de Stripe (si se elige Stripe) con `stripe.webhooks.constructEvent`.
-- Programar el cron de expiración en el hosting.
+1. En Mercado Pago > Tus integraciones, crea una aplicación (Checkout API / Bricks) y copia las
+   credenciales de **prueba** a `.env.local` junto con `PAYMENT_PROVIDER=mercadopago`.
+2. Configura el webhook (evento **Pagos**) apuntando a `https://TU-DOMINIO/api/webhooks/mercadopago`
+   y copia la clave secreta a `MERCADOPAGO_WEBHOOK_SECRET`. En local se necesita un túnel HTTPS.
+3. Prueba con las tarjetas de prueba de México (titular `APRO` = aprobado, `FUND` = fondos
+   insuficientes, `CONT` = pendiente). Los pagos en efectivo quedan `pending` en el entorno de prueba.
+4. Cambia a credenciales de producción solo con dominio HTTPS, textos legales y cron configurados.
+
+Pendiente: Status Screen Brick (código de barras OXXO dentro del sitio), reembolsos desde el panel y
+mostrar la CLABE en el sitio (la API de pagos no la devuelve; hoy se enlaza a las instrucciones de
+Mercado Pago; la API de órdenes `/v1/orders` sí la incluye).
 
 ## Seguridad
 
@@ -116,8 +137,51 @@ Estados de pedido: `PENDING_PAYMENT → PAID → PREPARING → SHIPPED → DELIV
 - Antispam en formularios: honeypot, tiempo mínimo de llenado y límite de peticiones por IP.
 - Variables sensibles solo en `.env.local` / gestor de secretos del hosting (ver `.env.example`).
 - `server-only` en módulos de servidor para que nunca se incluyan en el bundle del navegador.
-- Panel `/admin` (Fase 4): sesión Auth.js, verificación de rol en cada Server Action y Route Handler
-  (no solo en el middleware), y registro en `AdminAuditLog`.
+- Panel `/admin`: ver "Panel administrativo" abajo.
+
+## Panel administrativo (`/admin`)
+
+**Autenticación** (`src/server/auth/`). Se eligieron sesiones propias en base de datos en lugar de
+Auth.js porque su versión para el App Router (v5) sigue en beta; el diseño es pequeño y auditable:
+
+- Contraseñas con **scrypt** (N=2¹⁵, r=8, p=1, sal aleatoria) y comparación en tiempo constante. Si el
+  correo no existe se calcula igualmente un hash, para no revelar qué cuentas existen.
+- **Bloqueo**: 5 intentos fallidos bloquean la cuenta 15 min; además hay límite por IP y por correo.
+- **Sesión**: token aleatorio de 256 bits en cookie `__Host-` httpOnly + Secure + SameSite=Lax, 12 h.
+  En la tabla `Session` solo se guarda su SHA-256. Cerrar sesión la invalida en el servidor;
+  `npm run user:create` (cambio de contraseña) cierra todas las sesiones del usuario.
+- No hay registro público de administradores: se crean con `npm run user:create` o el seed.
+
+**Autorización** (`src/server/auth/permissions.ts`): `requireAdmin(permiso)` en **cada página** y
+`assertAdmin(permiso)` en **cada Server Action**. El `proxy.ts` solo hace una redirección optimista.
+
+| Rol | Resumen | Estadísticas | Pedidos | Productos y descuentos | Contenido | Bitácora |
+|---|---|---|---|---|---|---|
+| `ADMIN` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `STORE_MANAGER` | ✅ | ✅ | ✅ | ✅ | — | — |
+| `EDITOR` | ✅ | — | — | — | ✅ | — |
+
+**Secciones**
+- **Resumen**: ventas totales y de 30 días, pedidos por enviar y pendientes, ventas por día, pedidos
+  recientes, más vendidos e inventario bajo (≤ 3 piezas).
+- **Pedidos**: filtros por estado y búsqueda por correo o folio; detalle con productos, cliente,
+  dirección, pagos, historial de estados y otros pedidos del cliente. Cambios de estado con reglas
+  (`src/lib/order-flow.ts`), cancelación que libera inventario, reembolso con opción de reabastecer
+  (el dinero se devuelve en Mercado Pago) y registro de guía que marca "Enviado" y avisa al comprador.
+- **Productos**: alta/edición con variantes (talla, color, SKU, precio especial), fotografías por URL,
+  productos relacionados y estado. El inventario se ajusta **por diferencia** (`increment`), así una
+  venta que ocurra mientras se edita no se pierde. Productos con ventas se archivan en vez de borrarse.
+- **Descuentos**: porcentaje, monto fijo o envío gratis, con mínimo, usos máximos y vencimiento.
+- **Conciertos, Música y Videos**: alta, edición, publicación y eliminación. Fechas en hora del centro
+  de México. Videos aceptan cualquier enlace de YouTube. Solo un lanzamiento/video destacado a la vez.
+- **Bitácora**: inicio y cierre de sesión y cada cambio administrativo, con usuario, IP y detalle.
+
+Cada guardado invalida la caché del sitio público con `updateTag` (tienda, conciertos, música,
+videos), así que los cambios se ven al instante.
+
+**Pendiente**: subida de imágenes a almacenamiento de objetos (hoy se capturan URLs), edición de
+zonas y tarifas de envío desde el panel (hoy en `src/config/store.ts`), textos de "About" y
+gestión de usuarios desde la interfaz.
 
 ## Cumplimiento en México (pendiente de asesoría legal)
 
@@ -132,8 +196,8 @@ Estados de pedido: `PENDING_PAYMENT → PAID → PREPARING → SHIPPED → DELIV
 | 1. Diseño y estructura | ✅ | Sistema visual, header/menú móvil, footer, todas las páginas, HOME |
 | 2. Contenido musical | ✅ (con datos de ejemplo) | Discografía, videos (reproductor ligero de YouTube), tour + historial, About |
 | 3. Comercio | ✅ | Catálogo, filtros, variantes, inventario, carrito persistente, cotización, checkout de 6 pasos, pedidos idempotentes con reserva de inventario |
-| 4. Backend y administración | ⏳ | Migraciones, Auth.js, panel (productos, pedidos, contenido, estadísticas), subida de imágenes |
-| 5. Integraciones | 🟡 | ✅ webhook de Mercado Pago verificado · ⏳ componente de pago embebido, correos reales, guías de envío |
+| 4. Backend y administración | ✅ | PostgreSQL + migraciones, seed, autenticación con roles, panel completo · ⏳ subida de imágenes, zonas de envío y About editables |
+| 5. Integraciones | 🟡 | ✅ Mercado Pago (tarjeta, OXXO, SPEI, webhooks) · ⏳ correos reales, guías de envío |
 | 6. Pruebas y despliegue | ⏳ | Pruebas E2E del flujo de compra, auditoría de seguridad, Lighthouse, despliegue |
 
 ## Contenido pendiente de la banda
