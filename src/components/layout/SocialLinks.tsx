@@ -2,7 +2,15 @@ import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/cn";
 
 /** Enlaces a redes. Los que aún no tienen URL oficial se muestran deshabilitados. */
-export function SocialLinks({ className, size = "md" }: { className?: string; size?: "md" | "lg" }) {
+export function SocialLinks({
+  className,
+  size = "md",
+  pendingLabel = "enlace pendiente",
+}: {
+  className?: string;
+  size?: "md" | "lg";
+  pendingLabel?: string;
+}) {
   return (
     <ul className={cn("flex flex-wrap gap-2", className)}>
       {siteConfig.socials.map((s) => {
@@ -17,7 +25,7 @@ export function SocialLinks({ className, size = "md" }: { className?: string; si
                 {size === "lg" ? s.label : s.short}
               </a>
             ) : (
-              <span className={cn(cls, "cursor-not-allowed text-iron")} title={`${s.label}: enlace pendiente`} aria-label={`${s.label} (enlace pendiente)`}>
+              <span className={cn(cls, "cursor-not-allowed text-iron")} title={`${s.label}: ${pendingLabel}`} aria-label={`${s.label} (${pendingLabel})`}>
                 {size === "lg" ? s.label : s.short}
               </span>
             )}

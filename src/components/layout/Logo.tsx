@@ -1,21 +1,54 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 
+const LOGOS = {
+  /** Dos líneas: portada, footer, login. */
+  stacked: { src: "/brand/logo.webp", width: 1500, height: 838 },
+  /** Una línea: header. */
+  horizontal: { src: "/brand/logo-horizontal.webp", width: 2000, height: 263 },
+} as const;
+
 /**
- * Logotipo TIPOGRÁFICO PROVISIONAL. Sustituir por el logotipo oficial en SVG
- * (public/brand/logo.svg) cuando la banda lo entregue.
+ * Logotipo oficial (public/brand/, fondo transparente).
+ * El tamaño lo define quien lo usa: `h-10 w-auto` (por altura) o `w-64 h-auto` (por ancho).
  */
-export function Logo({ className, compact = false }: { className?: string; compact?: boolean }) {
+export function Logo({
+  className,
+  priority = false,
+  sizes = "120px",
+  variant = "stacked",
+}: {
+  className?: string;
+  priority?: boolean;
+  sizes?: string;
+  variant?: keyof typeof LOGOS;
+}) {
+  const logo = LOGOS[variant];
   return (
-    <span className={cn("display inline-flex select-none items-baseline gap-[0.18em] leading-none", className)}>
-      {compact ? (
-        <>
-          S<span className="text-ember">·</span>O<span className="text-ember">·</span>A<span className="text-ember">·</span>D
-        </>
-      ) : (
-        <>
-          Sleep On <span className="text-ember">a</span> Dream
-        </>
-      )}
-    </span>
+    <Image
+      src={logo.src}
+      alt="Sleep On a Dream"
+      width={logo.width}
+      height={logo.height}
+      priority={priority}
+      sizes={sizes}
+      className={cn("select-none", className)}
+      draggable={false}
+    />
+  );
+}
+
+/** Símbolo oficial de la banda (public/brand/simbolo.webp). */
+export function BrandSymbol({ className, alt = "" }: { className?: string; alt?: string }) {
+  return (
+    <Image
+      src="/brand/simbolo.webp"
+      alt={alt}
+      width={2000}
+      height={1737}
+      sizes="64px"
+      className={cn("select-none", className)}
+      draggable={false}
+    />
   );
 }

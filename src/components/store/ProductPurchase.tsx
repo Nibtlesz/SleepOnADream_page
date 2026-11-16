@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { ProductArt } from "@/components/ui/Art";
 import { Button } from "@/components/ui/Button";
 import { storeConfig } from "@/config/store";
+import { categoryName, fill } from "@/i18n";
+import { useI18n } from "@/i18n/client";
 import { cn } from "@/lib/cn";
 import { formatMXN } from "@/lib/format";
 import type { Product } from "@/lib/types";
@@ -15,6 +17,7 @@ const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "Única"];
 
 /** Galería + selector de variantes (color / talla) + agregar al carrito. */
 export function ProductPurchase({ product }: { product: Product }) {
+  const { t } = useI18n();
   const add = useCart((s) => s.add);
   const colors = useMemo(() => [...new Set(product.variants.map((v) => v.color).filter(Boolean))] as string[], [product]);
   const sizes = useMemo(
@@ -40,8 +43,8 @@ export function ProductPurchase({ product }: { product: Product }) {
   const needsSize = sizes.length > 1 && !size;
 
   function handleAdd() {
-    if (needsSize) return setError("Elige una talla.");
-    if (!variant || variant.stock === 0) return setError("Esta combinación está agotada.");
+    if (needsSize) return setError(t.product.chooseSize);
+    if (!variant || variant.stock === 0) return setError(t.product.comboSoldOut);
     setError(null);
     add(
       {
@@ -68,28 +71,28 @@ export function ProductPurchase({ product }: { product: Product }) {
             <ProductArt kind={product.art} color={color} className="aspect-square" />
           </div>
           {colors.filter((c) => c !== color).slice(0, 2).map((c) => (
-            <button key={c} type="button" onClick={() => setColor(c)} className="border border-smoke transition-colors hover:border-iron" aria-label={`Ver en ${c}`}>
+            <button key={c} type="button" onClick={() => setColor(c)} className="border border-smoke transition-colors hover:border-iron" aria-label={`${t.product.viewIn} ${c}`}>
               <ProductArt kind={product.art} color={c} className="aspect-square" />
             </button>
           ))}
         </div>
-        <p className="mt-3 text-xs text-fog">Ilustración provisional. Se reemplaza por fotografías reales del producto.</p>
+        <p className="mt-3 text-xs text-fog">{t.product.artNote}</p>
       </div>
 
       {/* Compra */}
       <div className="lg:col-span-5">
         <div className="lg:sticky lg:top-28">
-          <p className="eyebrow">{product.category.name}</p>
+          <p className="eyebrow">{categoryName(t, product.category.slug, product.category.name)}</p>
           <h1 className="display mt-3 text-5xl md:text-6xl">{product.name}</h1>
           <p className="mt-5 flex items-baseline gap-3 text-2xl tabular-nums">
             {formatMXN(price)}
             {product.compareAt && <span className="text-base text-fog line-through">{formatMXN(product.compareAt)}</span>}
-            <span className="text-xs text-fog">MXN · IVA incluido</span>
+            <span className="text-xs text-fog">{t.product.taxIncluded}</span>
           </p>
 
           {colors.length > 0 && (
             <fieldset className="mt-8">
-              <legend className="eyebrow mb-3">Color: <span className="text-bone">{color}</span></legend>
+              <legend className="eyebrow mb-3">{t.product.color}: <span className="text-bone">{color}</span></legend>
               <div className="flex flex-wrap gap-2">
                 {colors.map((c) => (
                   <button
@@ -109,7 +112,7 @@ export function ProductPurchase({ product }: { product: Product }) {
           {sizes.length > 1 && (
             <fieldset className="mt-6">
               <legend className="eyebrow mb-3 flex w-full justify-between">
-                <span>Talla{size && <>: <span className="text-bone">{size}</span></>}</span>
+                <span>{t.product.size}{size && <>: <span className="text-bone">{size}</span></>}</span>
               </legend>
               <div className="grid grid-cols-5 gap-2">
                 {sizes.map((s) => {
@@ -120,7 +123,7 @@ export function ProductPurchase({ product }: { product: Product }) {
                       type="button"
                       disabled={stock === 0}
                       aria-pressed={s === size}
-                      aria-label={`Talla ${s}${stock === 0 ? " (agotada)" : ""}`}
+                      aria-label={`${t.product.size} ${s}${stock === 0 ? ` (${t.product.sizeSoldOut})` : ""}`}
                       onClick={() => { setSize(s); setQty(1); setError(null); }}
                       className={cn(
                         "relative h-11 border text-sm transition-colors disabled:cursor-not-allowed disabled:text-iron",
@@ -138,11 +141,11 @@ export function ProductPurchase({ product }: { product: Product }) {
 
           <p className="mt-4 h-5 text-xs" aria-live="polite">
             {variant && purchasable && (variant.stock === 0 ? (
-              <span className="text-ember">Agotado</span>
+              <span className="text-ember">{t.product.soldOut}</span>
             ) : variant.stock <= 3 ? (
-              <span className="text-ember">¡Últimas {variant.stock} piezas!</span>
+              <span className="text-ember">{fill(t.product.lastUnits, { n: variant.stock })}</span>
             ) : (
-              <span className="text-fog">Disponible</span>
+              <span className="text-fog">{t.product.available}</span>
             ))}
           </p>
 
@@ -152,12 +155,12 @@ export function ProductPurchase({ product }: { product: Product }) {
                 <QuantityStepper value={qty} max={Math.min(variant?.stock || 1, storeConfig.maxQtyPerItem)} onChange={setQty} label={product.name} />
               </div>
               <Button type="button" size="lg" className="flex-1" onClick={handleAdd} disabled={Boolean(variant && variant.stock === 0)}>
-                {added ? <><Check className="h-4 w-4" /> Agregado</> : <><ShoppingBag className="h-4 w-4" /> Agregar al carrito</>}
+                {added ? <><Check className="h-4 w-4" /> {t.product.added}</> : <><ShoppingBag className="h-4 w-4" /> {t.product.addToCart}</>}
               </Button>
             </div>
           ) : (
             <p className="mt-4 border border-smoke px-5 py-4 text-sm text-mist">
-              {product.status === "COMING_SOON" ? "Próximamente. Suscríbete al newsletter para la preventa." : "No disponible por ahora."}
+              {product.status === "COMING_SOON" ? t.product.comingSoonNote : t.product.unavailable}
             </p>
           )}
           {error && <p role="alert" className="mt-3 text-sm text-ember">{error}</p>}
@@ -165,12 +168,12 @@ export function ProductPurchase({ product }: { product: Product }) {
           <div className="mt-10 space-y-4 border-t border-smoke pt-8 text-sm leading-relaxed text-mist">
             <p>{product.description}</p>
             <details className="border-t border-smoke pt-4">
-              <summary className="cursor-pointer font-semibold text-bone">Envíos</summary>
-              <p className="mt-2 text-fog">Envíos a todo México. Gratis en pedidos desde {formatMXN(storeConfig.freeShippingOver)}. El costo exacto se calcula por estado en el carrito.</p>
+              <summary className="cursor-pointer font-semibold text-bone">{t.product.shipping}</summary>
+              <p className="mt-2 text-fog">{fill(t.product.shippingText, { amount: formatMXN(storeConfig.freeShippingOver) })}</p>
             </details>
             <details className="border-t border-smoke pt-4">
-              <summary className="cursor-pointer font-semibold text-bone">Guía de tallas</summary>
-              <p className="mt-2 text-fog">Tabla de medidas pendiente (se cargará desde el panel).</p>
+              <summary className="cursor-pointer font-semibold text-bone">{t.product.sizeGuide}</summary>
+              <p className="mt-2 text-fog">{t.product.sizeGuideText}</p>
             </details>
           </div>
         </div>

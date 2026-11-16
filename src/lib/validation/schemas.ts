@@ -1,11 +1,12 @@
 /**
  * Esquemas de validación compartidos (frontend y backend).
+ * Los mensajes de error son claves (p. ej. "v.email") que la interfaz traduce al idioma activo.
  * El servidor vuelve a validar todo: nunca se confía en el cliente.
  */
 import { z } from "zod";
 import { storeConfig } from "@/config/store";
 
-const email = z.email({ error: "Escribe un correo válido." }).trim().max(254);
+const email = z.email({ error: "v.email" }).trim().max(254);
 
 /** Campo trampa: los humanos no lo ven; si viene con valor, es un bot. */
 const honeypot = z.string().max(0).optional().or(z.literal(""));
@@ -14,16 +15,16 @@ const renderedAt = z.coerce.number().int().positive();
 
 export const newsletterSchema = z.object({
   email,
-  consent: z.literal("on", { error: "Necesitamos tu consentimiento para enviarte noticias." }),
+  consent: z.literal("on", { error: "v.consent" }),
   company: honeypot,
   renderedAt,
 });
 
 export const contactSchema = z.object({
-  name: z.string().trim().min(2, "Escribe tu nombre.").max(100),
+  name: z.string().trim().min(2, "v.name").max(100),
   email,
-  topic: z.enum(["general", "booking", "press", "store"], { error: "Elige un motivo." }),
-  message: z.string().trim().min(10, "Cuéntanos un poco más (mínimo 10 caracteres).").max(4000),
+  topic: z.enum(["general", "booking", "press", "store"], { error: "v.topic" }),
+  message: z.string().trim().min(10, "v.message").max(4000),
   company: honeypot,
   renderedAt,
 });

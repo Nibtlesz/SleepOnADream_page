@@ -13,7 +13,8 @@
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
     "db:dev": "NODE_OPTIONS=--experimental-sqlite prisma dev -d --name soad",
-    "user:create": "tsx scripts/create-user.ts"
+    "user:create": "tsx scripts/create-user.ts",
+    "brand:icons": "node scripts/brand-assets.mjs"
   },
   "dependencies": {
     "@mercadopago/sdk-react": "^1.0.7",

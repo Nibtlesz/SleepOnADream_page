@@ -11,7 +11,8 @@ import { getClientIp } from "@/server/request";
 import { sendEmail } from "@/server/services/email";
 
 const MIN_FILL_MS = 2_500;
-const GENERIC_OK = "¡Listo! Recibimos tu mensaje.";
+// Los mensajes son claves que la interfaz traduce (i18n/dictionaries → messages).
+const GENERIC_OK = "contact.ok";
 
 function looksLikeBot(company: string | undefined, renderedAt: number) {
   return Boolean(company) || Date.now() - renderedAt < MIN_FILL_MS;
@@ -20,15 +21,15 @@ function looksLikeBot(company: string | undefined, renderedAt: number) {
 export async function subscribeNewsletter(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = newsletterSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    return { status: "error", message: "Revisa los datos.", fieldErrors: parsed.error.flatten().fieldErrors };
+    return { status: "error", message: "form.check", fieldErrors: parsed.error.flatten().fieldErrors };
   }
   const { email, company, renderedAt } = parsed.data;
   // Respuesta de éxito silenciosa ante bots para no darles retroalimentación.
-  if (looksLikeBot(company, renderedAt)) return { status: "success", message: "¡Gracias por suscribirte!" };
+  if (looksLikeBot(company, renderedAt)) return { status: "success", message: "newsletter.thanks" };
 
   const ip = await getClientIp();
   if (!rateLimit(`nl:${ip}`, 5, 10 * 60_000).ok) {
-    return { status: "error", message: "Demasiados intentos. Intenta de nuevo en unos minutos." };
+    return { status: "error", message: "form.rateLimited" };
   }
 
   if (isDbConfigured) {
@@ -41,20 +42,20 @@ export async function subscribeNewsletter(_prev: FormState, formData: FormData):
   // Fase 5: correo de doble confirmación (doble opt-in).
   await sendEmail({ to: email, subject: "Confirma tu suscripción", text: "Correo de confirmación pendiente (Fase 5)." });
 
-  return { status: "success", message: "¡Gracias! Revisa tu correo para confirmar la suscripción." };
+  return { status: "success", message: "newsletter.confirm" };
 }
 
 export async function sendContactMessage(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = contactSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    return { status: "error", message: "Revisa los campos marcados.", fieldErrors: parsed.error.flatten().fieldErrors };
+    return { status: "error", message: "form.checkFields", fieldErrors: parsed.error.flatten().fieldErrors };
   }
   const { company, renderedAt, ...data } = parsed.data;
   if (looksLikeBot(company, renderedAt)) return { status: "success", message: GENERIC_OK };
 
   const ip = await getClientIp();
   if (!rateLimit(`contact:${ip}`, 3, 10 * 60_000).ok) {
-    return { status: "error", message: "Demasiados mensajes seguidos. Intenta más tarde." };
+    return { status: "error", message: "form.tooMany" };
   }
 
   if (isDbConfigured) {
@@ -67,5 +68,5 @@ export async function sendContactMessage(_prev: FormState, formData: FormData): 
     text: data.message,
   });
 
-  return { status: "success", message: `${GENERIC_OK} Te responderemos lo antes posible.` };
+  return { status: "success", message: GENERIC_OK };
 }

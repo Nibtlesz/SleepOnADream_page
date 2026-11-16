@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BarChart3, CalendarDays, ClipboardList, Disc3, Film, LogOut, Menu, Package, ScrollText, TicketPercent, X } from "lucide-react";
+import { BrandSymbol } from "@/components/layout/Logo";
 import { cn } from "@/lib/cn";
 
 const ICONS = { dashboard: BarChart3, products: Package, discounts: TicketPercent, orders: ClipboardList, shows: CalendarDays, music: Disc3, videos: Film, audit: ScrollText };
@@ -27,7 +28,7 @@ export function AdminNav({ items, user, logout }: { items: NavEntry[]; user: { e
   return (
     <>
       <div className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-smoke bg-coal px-4 lg:hidden">
-        <Link href="/admin" className="display text-xl">SOAD <span className="text-ember">Panel</span></Link>
+        <Link href="/admin" className="display flex items-center gap-2 text-xl"><BrandSymbol className="h-7 w-auto" /> <span className="text-ember">Panel</span></Link>
         <button type="button" onClick={() => setOpen((o) => !o)} className="grid h-10 w-10 place-items-center" aria-expanded={open} aria-controls="admin-nav" aria-label={open ? "Cerrar menú" : "Abrir menú"}>
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -39,7 +40,7 @@ export function AdminNav({ items, user, logout }: { items: NavEntry[]; user: { e
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <Link href="/admin" className="display hidden px-6 py-6 text-2xl lg:block">SOAD <span className="text-ember">Panel</span></Link>
+        <Link href="/admin" className="display hidden items-center gap-3 px-6 py-6 text-2xl lg:flex"><BrandSymbol className="h-9 w-auto" alt="Sleep On a Dream" /> <span className="text-ember">Panel</span></Link>
         <nav aria-label="Panel" className="flex-1 overflow-y-auto px-3 py-4 lg:py-0">
           <ul className="space-y-1">
             {items.map((item) => {

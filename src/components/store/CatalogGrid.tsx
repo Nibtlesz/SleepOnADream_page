@@ -2,6 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
+import { categoryName } from "@/i18n";
+import { useI18n } from "@/i18n/client";
 import { cn } from "@/lib/cn";
 import type { Category, Product } from "@/lib/types";
 import { ProductCard } from "./ProductCard";
@@ -9,6 +11,7 @@ import { ProductCard } from "./ProductCard";
 type Sort = "featured" | "price-asc" | "price-desc";
 
 export function CatalogGrid({ products, categories }: { products: Product[]; categories: Category[] }) {
+  const { t } = useI18n();
   const [category, setCategory] = useState<string>("all");
   const [sort, setSort] = useState<Sort>("featured");
   const [onlyAvailable, setOnlyAvailable] = useState(false);
@@ -21,13 +24,13 @@ export function CatalogGrid({ products, categories }: { products: Product[]; cat
     return list;
   }, [products, category, sort, onlyAvailable]);
 
-  const tabs = [{ slug: "all", name: "Todo" }, ...categories];
+  const tabs = [{ slug: "all", name: t.store.all }, ...categories.map((c) => ({ ...c, name: categoryName(t, c.slug, c.name) }))];
 
   return (
     <>
       <div className="sticky top-16 z-30 -mx-5 mb-10 border-y border-smoke bg-ink/90 px-5 backdrop-blur-md md:top-20 md:-mx-10 md:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4 py-3">
-          <div className="-mx-1 flex gap-1 overflow-x-auto" role="tablist" aria-label="Categorías">
+          <div className="-mx-1 flex gap-1 overflow-x-auto" role="tablist" aria-label={t.store.categories}>
             {tabs.map((c) => (
               <button
                 key={c.slug}
@@ -47,21 +50,21 @@ export function CatalogGrid({ products, categories }: { products: Product[]; cat
           <div className="flex items-center gap-5 text-xs text-mist">
             <label className="flex cursor-pointer items-center gap-2">
               <input type="checkbox" className="accent-ember" checked={onlyAvailable} onChange={(e) => setOnlyAvailable(e.target.checked)} />
-              Solo disponibles
+              {t.store.onlyAvailable}
             </label>
             <label className="flex items-center gap-2">
-              <span className="sr-only sm:not-sr-only">Ordenar</span>
+              <span className="sr-only sm:not-sr-only">{t.store.sort}</span>
               <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="h-9 border border-smoke bg-coal px-2 text-xs text-bone">
-                <option value="featured">Destacados</option>
-                <option value="price-asc">Precio: menor a mayor</option>
-                <option value="price-desc">Precio: mayor a menor</option>
+                <option value="featured">{t.store.sortFeatured}</option>
+                <option value="price-asc">{t.store.sortAsc}</option>
+                <option value="price-desc">{t.store.sortDesc}</option>
               </select>
             </label>
           </div>
         </div>
       </div>
 
-      <p className="sr-only" aria-live="polite">{visible.length} productos</p>
+      <p className="sr-only" aria-live="polite">{visible.length} {t.store.products}</p>
       <motion.ul layout className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6 xl:grid-cols-4">
         <AnimatePresence mode="popLayout">
           {visible.map((p) => (
@@ -78,7 +81,7 @@ export function CatalogGrid({ products, categories }: { products: Product[]; cat
           ))}
         </AnimatePresence>
       </motion.ul>
-      {visible.length === 0 && <p className="py-20 text-center text-mist">No hay productos en esta selección.</p>}
+      {visible.length === 0 && <p className="py-20 text-center text-mist">{t.store.emptyFilter}</p>}
     </>
   );
 }

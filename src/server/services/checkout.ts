@@ -35,6 +35,8 @@ export type CheckoutResult =
       ok: false;
       error: "shipping_required" | "payment_unavailable" | "empty_cart" | "payment_rejected" | "payment_error" | "order_expired";
       message: string;
+      /** status_detail de Mercado Pago (para mostrar el motivo traducido). */
+      detail?: string;
     };
 
 export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> {
@@ -156,6 +158,7 @@ async function payWithMercadoPago(order: OrderRecord, input: CheckoutInput): Pro
     return {
       ok: false,
       error: created.status >= 500 ? "payment_error" : "payment_rejected",
+      detail: created.status >= 500 ? undefined : "invalid_data",
       message:
         created.status >= 500
           ? "No pudimos conectar con Mercado Pago. Intenta de nuevo en un momento."
@@ -171,7 +174,7 @@ async function payWithMercadoPago(order: OrderRecord, input: CheckoutInput): Pro
 
   const result = mapMercadoPagoStatus(p.status);
   if (result === "rejected") {
-    return { ok: false, error: "payment_rejected", message: rejectionMessage(p.status_detail) };
+    return { ok: false, error: "payment_rejected", message: rejectionMessage(p.status_detail), detail: p.status_detail ?? undefined };
   }
 
   const method = resolvePaymentMethod(p);

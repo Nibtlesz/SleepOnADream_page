@@ -60,6 +60,7 @@ Para cobrar con Mercado Pago (tarjeta, OXXO y SPEI) sigue "Puesta en marcha de M
 | `npm run db:seed` | Carga datos de ejemplo y el administrador inicial (idempotente) |
 | `npm run user:create -- correo ROL "Nombre"` | Crea o actualiza un usuario del panel (`ADMIN`, `STORE_MANAGER`, `EDITOR`) |
 | `npm run db:studio` | Explorador de la base de datos |
+| `npm run brand:icons` | Regenera favicon, ícono de iOS e imagen para redes desde `public/brand/` |
 
 ## Documentación
 

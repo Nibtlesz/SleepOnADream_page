@@ -1,19 +1,24 @@
-import Link from "next/link";
+"use client";
+
 import { ProductArt } from "@/components/ui/Art";
+import { useI18n } from "@/i18n/client";
+import { LocaleLink as Link } from "@/i18n/LocaleLink";
 import { formatMXN } from "@/lib/format";
+import { categoryName, type Dictionary } from "@/i18n";
 import type { Product } from "@/lib/types";
 
-function badge(product: Product) {
+function badge(product: Product, t: Dictionary) {
   const stock = product.variants.reduce((a, v) => a + v.stock, 0);
-  if (product.status === "COMING_SOON") return "Próximamente";
-  if (stock === 0) return "Agotado";
-  if (product.compareAt) return "Oferta";
-  if (product.isExclusive) return "Exclusivo";
+  if (product.status === "COMING_SOON") return t.store.badge.comingSoon;
+  if (stock === 0) return t.store.badge.soldOut;
+  if (product.compareAt) return t.store.badge.sale;
+  if (product.isExclusive) return t.store.badge.exclusive;
   return null;
 }
 
 export function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
-  const label = badge(product);
+  const { t } = useI18n();
+  const label = badge(product, t);
   const colors = [...new Set(product.variants.map((v) => v.color).filter(Boolean))] as string[];
   return (
     <Link href={`/store/${product.slug}`} className="group block" prefetch={priority ? true : undefined}>
@@ -33,17 +38,17 @@ export function ProductCard({ product, priority = false }: { product: Product; p
         )}
         {product.isSample && (
           <span className="absolute right-3 bottom-3 text-[0.55rem] font-semibold uppercase tracking-[0.2em] text-ember/80">
-            Ejemplo
+            {t.common.sample}
           </span>
         )}
         <span className="absolute inset-x-0 bottom-0 translate-y-full bg-blood py-3 text-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] transition-transform duration-500 group-hover:translate-y-0">
-          Ver producto
+          {t.store.viewProduct}
         </span>
       </div>
       <div className="mt-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold transition-colors group-hover:text-ember">{product.name}</p>
-          <p className="mt-0.5 text-xs text-fog">{product.category.name}</p>
+          <p className="mt-0.5 text-xs text-fog">{categoryName(t, product.category.slug, product.category.name)}</p>
         </div>
         <p className="shrink-0 text-right text-sm tabular-nums">
           {product.compareAt && <span className="mr-2 text-xs text-fog line-through">{formatMXN(product.compareAt)}</span>}
