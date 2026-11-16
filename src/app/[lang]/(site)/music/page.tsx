@@ -8,7 +8,7 @@ import { SampleBadge } from "@/components/ui/SampleBadge";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { siteConfig } from "@/config/site";
 import { INTL_LOCALE } from "@/i18n/config";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 import type { Dictionary } from "@/i18n";
 import { formatDate, formatDuration } from "@/lib/format";
 import type { Release } from "@/lib/types";
@@ -16,7 +16,7 @@ import { getReleases } from "@/server/queries/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: t.meta.music.title, description: t.meta.music.description };
+  return { title: t.meta.music.title, description: t.meta.music.description, alternates: await pageAlternates("/music") };
 }
 
 function Player({ release, t }: { release: Release; t: Dictionary }) {

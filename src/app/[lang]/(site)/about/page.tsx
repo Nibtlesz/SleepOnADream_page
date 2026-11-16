@@ -6,12 +6,12 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SampleBadge } from "@/components/ui/SampleBadge";
 import { siteConfig } from "@/config/site";
 import { LocaleLink as Link } from "@/i18n/LocaleLink";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 import { getBandMembers, getReleases } from "@/server/queries/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: t.meta.about.title, description: t.meta.about.description };
+  return { title: t.meta.about.title, description: t.meta.about.description, alternates: await pageAlternates("/about") };
 }
 
 /** Bloque de texto pendiente: deja claro que el contenido oficial aún no se ha cargado. */

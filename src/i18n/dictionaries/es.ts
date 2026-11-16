@@ -417,6 +417,16 @@ const es = {
     privacy: "aviso de privacidad",
   },
   social: { pending: "enlace pendiente" },
+  /** Correos al comprador (se envían en el idioma en que hizo la compra). */
+  emails: {
+    confirmedSubject: "Confirmamos tu pedido {number}",
+    confirmedText: "Hola {name}, recibimos tu pago por {total}. Te avisaremos cuando tu pedido sea enviado.",
+    shippedSubject: "Tu pedido {number} va en camino",
+    shippedText: "Tu pedido salió con {carrier}. Número de guía: {tracking}",
+    trackingLine: "Rastreo: {url}",
+    deliveredSubject: "Tu pedido {number} fue entregado",
+    deliveredText: "¡Gracias por tu compra! Esperamos que lo disfrutes.",
+  },
   notFound: { code: "Error 404", title: "Perdido en el sueño", text: "La página que buscas no existe." },
   /** Mensajes de validación y de formularios (las claves vienen de los esquemas y del servidor). */
   messages: {
@@ -438,6 +448,7 @@ const es = {
     "v.paymentMethod": "Elige un método de pago.",
     "v.terms": "Debes aceptar los términos y el aviso de privacidad.",
     "v.cartEmpty": "Tu carrito está vacío.",
+    "v.tooLong": "Es demasiado largo.",
     "form.check": "Revisa los datos.",
     "form.checkFields": "Revisa los campos marcados.",
     "form.rateLimited": "Demasiados intentos. Intenta de nuevo en unos minutos.",
@@ -445,7 +456,7 @@ const es = {
     "newsletter.thanks": "¡Gracias por suscribirte!",
     "newsletter.confirm": "¡Gracias! Revisa tu correo para confirmar la suscripción.",
     "contact.ok": "¡Listo! Recibimos tu mensaje. Te responderemos lo antes posible.",
-  } as Record<string, string>,
+  },
 };
 
 export default es;

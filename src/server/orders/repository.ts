@@ -6,6 +6,7 @@
  */
 import "server-only";
 import { randomUUID } from "node:crypto";
+import { isLocale } from "@/i18n/config";
 import { getDb, isDbConfigured } from "@/lib/db";
 import type { OrderRecord, OrderStatus, PaymentInstructions } from "@/lib/orders";
 import type { PaymentMethod, ShippingAddress } from "@/lib/validation/checkout";
@@ -173,6 +174,7 @@ function fromDb(o: DbOrder): OrderRecord {
     total: o.total,
     reservedUntil: o.reservedUntil?.toISOString() ?? null,
     paymentInstructions: (o.paymentInstructions as unknown as PaymentInstructions | null) ?? null,
+    locale: isLocale(o.locale) ? o.locale : "es",
     createdAt: o.createdAt.toISOString(),
   };
 }
@@ -230,6 +232,7 @@ const prismaRepo: OrderRepository = {
             total: order.total,
             reservedUntil: order.reservedUntil ? new Date(order.reservedUntil) : null,
             paymentInstructions: order.paymentInstructions ?? undefined,
+            locale: order.locale,
             items: { create: order.items },
             statusHistory: { create: { to: "PENDING_PAYMENT", note: "Pedido creado en el checkout" } },
           },

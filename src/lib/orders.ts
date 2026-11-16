@@ -1,4 +1,5 @@
 /** Tipos de pedido compartidos entre servidor y la página de confirmación. */
+import type { Locale } from "@/i18n/config";
 import type { PaymentMethod, ShippingAddress } from "@/lib/validation/checkout";
 
 export type OrderStatus =
@@ -61,6 +62,8 @@ export interface OrderRecord {
   address: ShippingAddress;
   shippingRateName: string;
   paymentMethod: PaymentMethod;
+  /** Idioma de la compra: confirmación y correos. */
+  locale: Locale;
   items: Array<{ variantId: string; productName: string; variantLabel: string; unitPrice: number; quantity: number }>;
   subtotal: number;
   discountTotal: number;

@@ -5,13 +5,13 @@ import { PhotoPlaceholder } from "@/components/ui/Art";
 import { SampleBadge } from "@/components/ui/SampleBadge";
 import { storeConfig } from "@/config/store";
 import { fill } from "@/i18n";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 import { formatMXN } from "@/lib/format";
 import { getCategories, getProducts } from "@/server/queries/catalog";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: t.meta.store.title, description: t.meta.store.description };
+  return { title: t.meta.store.title, description: t.meta.store.description, alternates: await pageAlternates("/store") };
 }
 
 const PERK_ICONS = [Truck, ShieldCheck, Package, RotateCcw];

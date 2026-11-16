@@ -11,6 +11,8 @@
  */
 import "server-only";
 import { revalidateTag } from "next/cache";
+import { fill } from "@/i18n";
+import { getDictionary } from "@/i18n/dictionaries";
 import { randomBytes } from "node:crypto";
 import { storeConfig } from "@/config/store";
 import type { OrderRecord } from "@/lib/orders";
@@ -78,6 +80,8 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
   }
   if (quote.lines.length === 0) return { ok: false, error: "empty_cart", message: "Tu carrito está vacío." };
 
+  const dict = getDictionary(input.locale);
+
   // 3) Instantánea de productos (nombre / variante al momento de comprar)
   const variants = await findVariantsForQuote(input.items.map((i) => i.variantId));
   const items = quote.lines.map((l) => {
@@ -100,7 +104,9 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
       customerName: input.customer.name,
       phone: input.customer.phone,
       address: input.address,
-      shippingRateName: `${rate.name} · ${rate.eta}`,
+      // Instantánea en el idioma del comprador (es lo que vio y lo que verá en su confirmación).
+      shippingRateName: `${dict.cart.rateNames[rate.name] ?? rate.name} · ${fill(dict.cart.eta, { min: rate.etaMin, max: rate.etaMax })}`,
+      locale: input.locale,
       paymentMethod: input.paymentMethod === "test" ? "test" : "mercadopago",
       items,
       subtotal: quote.totals.subtotal,

@@ -12,6 +12,9 @@ import { audit } from "@/server/audit";
 import { assertAdmin } from "@/server/auth/dal";
 import { orders } from "@/server/orders/repository";
 import { CATALOG_TAG } from "@/server/queries/catalog";
+import { fill } from "@/i18n";
+import { isLocale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 import { sendEmail } from "@/server/services/email";
 
 const statusSchema = z.object({
@@ -52,7 +55,8 @@ export async function changeOrderStatus(_prev: ActionState, formData: FormData):
   await audit(user, "order.status_change", "Order", orderId, { from, to, note, restock: restock === "on" });
   if (to === "CANCELLED" || restock === "on") updateTag(CATALOG_TAG);
   if (to === "DELIVERED") {
-    await sendEmail({ to: order.email, subject: `Tu pedido ${orderNumber(order.number)} fue entregado`, text: "¡Gracias por tu compra! Esperamos que lo disfrutes." });
+    const mail = getDictionary(isLocale(order.locale) ? order.locale : "es").emails;
+    await sendEmail({ to: order.email, subject: fill(mail.deliveredSubject, { number: orderNumber(order.number) }), text: mail.deliveredText });
   }
   revalidatePath(`/admin/pedidos/${orderId}`);
   return {
@@ -87,10 +91,12 @@ export async function addShipment(_prev: ActionState, formData: FormData): Promi
     return s;
   });
 
+  // El correo va en el idioma en que la persona compró.
+  const mail = getDictionary(isLocale(order.locale) ? order.locale : "es").emails;
   await sendEmail({
     to: order.email,
-    subject: `Tu pedido ${orderNumber(order.number)} va en camino`,
-    text: `Tu pedido salió con ${carrier}. Número de guía: ${trackingNumber}${trackingUrl ? `\nRastreo: ${trackingUrl}` : ""}`,
+    subject: fill(mail.shippedSubject, { number: orderNumber(order.number) }),
+    text: fill(mail.shippedText, { carrier, tracking: trackingNumber }) + (trackingUrl ? `\n${fill(mail.trackingLine, { url: trackingUrl })}` : ""),
   });
   await db.shipment.update({ where: { id: shipment.id }, data: { notifiedAt: new Date() } });
   await audit(user, "order.shipment_add", "Order", orderId, { carrier, trackingNumber });

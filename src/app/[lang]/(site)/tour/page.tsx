@@ -3,12 +3,12 @@ import { ShowRow } from "@/components/tour/ShowRow";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { siteConfig } from "@/config/site";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 import { getShows } from "@/server/queries/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: t.meta.tour.title, description: t.meta.tour.description };
+  return { title: t.meta.tour.title, description: t.meta.tour.description, alternates: await pageAlternates("/tour") };
 }
 
 export default async function TourPage() {

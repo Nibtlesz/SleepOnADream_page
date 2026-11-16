@@ -1,20 +1,49 @@
 /** Utilidades de idioma comunes (cliente y servidor). */
-import en from "./dictionaries/en";
-import es, { type Dictionary } from "./dictionaries/es";
-import type { Locale } from "./config";
+import { createElement, Fragment, type ReactNode } from "react";
+import type { Dictionary } from "./dictionaries/es";
 
 export type { Dictionary };
-export const dictionaries: Record<Locale, Dictionary> = { es, en };
 
 /** Reemplaza {clave} en un texto: fill("Pagar {amount}", { amount: "$499" }). */
 export function fill(text: string, vars: Record<string, string | number>): string {
   return text.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
 }
 
-/** Traduce una clave de mensaje (validación / servidor); si no existe, devuelve el texto tal cual. */
+/** Claves de mensajes de validación y de servidor (definidas en el diccionario). */
+export type MessageKey = keyof Dictionary["messages"];
+
+/**
+ * Marca una clave de mensaje. TypeScript rechaza claves que no existan en el diccionario,
+ * así un error de dedo en un esquema falla al compilar en vez de mostrarse al usuario.
+ */
+export const k = <K extends MessageKey>(key: K): K => key;
+
+/**
+ * Como `fill`, pero los valores pueden ser elementos de React:
+ * fillNodes("Te faltan {amount} para…", { amount: <strong>$501</strong> }).
+ * Si la traducción no trae el marcador, el valor se agrega al final para no perderlo.
+ */
+export function fillNodes(text: string, vars: Record<string, ReactNode>): ReactNode[] {
+  const used = new Set<string>();
+  const parts = text.split(/\{(\w+)\}/).map((part, i) => {
+    if (i % 2 === 0) return part;
+    used.add(part);
+    return createElement(Fragment, { key: `${part}-${i}` }, vars[part] ?? `{${part}}`);
+  });
+  for (const [key, value] of Object.entries(vars)) {
+    if (!used.has(key)) parts.push(" ", createElement(Fragment, { key }, value));
+  }
+  return parts;
+}
+
+/** Traduce una clave de mensaje (validación / servidor). Si no es una clave conocida, la devuelve tal cual. */
 export function msg(dict: Dictionary, key: string | undefined): string | undefined {
   if (!key) return undefined;
-  return dict.messages[key] ?? key;
+  const text = (dict.messages as Record<string, string>)[key];
+  if (text === undefined && process.env.NODE_ENV !== "production" && /^[a-z]+\.[A-Za-z]+$/.test(key)) {
+    console.warn(`[i18n] Falta el mensaje "${key}" en el diccionario.`);
+  }
+  return text ?? key;
 }
 
 /** Nombre de categoría en el idioma activo (los nombres guardados en la base están en español). */

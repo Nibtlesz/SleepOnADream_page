@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { ButtonLink } from "@/components/ui/Button";
 import { storeConfig } from "@/config/store";
+import { fillNodes } from "@/i18n";
 import { useI18n } from "@/i18n/client";
 import { formatMXN } from "@/lib/format";
 import { selectSubtotal, useCart, useHydrated } from "@/store/cart";
@@ -82,7 +83,7 @@ export function CartDrawer() {
                 <div className="border-b border-smoke px-6 py-4">
                   <p className="text-xs text-mist">
                     {remaining > 0 ? (
-                      <>{t.cart.toFree.split("{amount}")[0]}<strong className="text-bone">{formatMXN(remaining)}</strong>{t.cart.toFree.split("{amount}")[1]}</>
+                      fillNodes(t.cart.toFree, { amount: <strong className="text-bone">{formatMXN(remaining)}</strong> })
                     ) : (
                       <strong className="text-bone">{t.cart.freeShipping}</strong>
                     )}

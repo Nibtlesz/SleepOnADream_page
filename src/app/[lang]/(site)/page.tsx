@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import { Hero } from "@/components/home/Hero";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
@@ -11,10 +12,14 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SampleBadge } from "@/components/ui/SampleBadge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { INTL_LOCALE } from "@/i18n/config";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 import { formatDate } from "@/lib/format";
 import { getFeaturedProducts } from "@/server/queries/catalog";
 import { getLatestRelease, getNews, getShows } from "@/server/queries/content";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return { alternates: await pageAlternates("/") };
+}
 
 export default async function HomePage() {
   const { lang, t } = await getI18n();

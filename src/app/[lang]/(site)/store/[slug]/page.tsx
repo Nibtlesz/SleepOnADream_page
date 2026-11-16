@@ -9,7 +9,7 @@ import { siteConfig } from "@/config/site";
 import { categoryName } from "@/i18n";
 import { localizePath } from "@/i18n/config";
 import { LocaleLink as Link } from "@/i18n/LocaleLink";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 import { getProductBySlug, getProducts, getRelatedProducts } from "@/server/queries/catalog";
 
 export async function generateStaticParams() {
@@ -21,7 +21,11 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/store/[slu
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: (await getI18n()).t.meta.productNotFound };
-  return { title: product.name, description: product.description.slice(0, 155) };
+  return {
+    title: product.name,
+    description: product.description.slice(0, 155),
+    alternates: await pageAlternates(`/store/${product.slug}`),
+  };
 }
 
 export default function ProductPage({ params }: PageProps<"/[lang]/store/[slug]">) {

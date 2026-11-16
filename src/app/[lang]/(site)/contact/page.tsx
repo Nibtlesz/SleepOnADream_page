@@ -4,11 +4,11 @@ import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { SocialLinks } from "@/components/layout/SocialLinks";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { siteConfig } from "@/config/site";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: t.meta.contact.title, description: t.meta.contact.description };
+  return { title: t.meta.contact.title, description: t.meta.contact.description, alternates: await pageAlternates("/contact") };
 }
 
 export default async function ContactPage() {

@@ -5,7 +5,7 @@
 import { lang as rootLang } from "next/root-params";
 import { notFound } from "next/navigation";
 import { isLocale, localizePath, type Locale } from "./config";
-import { dictionaries } from "./index";
+import { dictionaries } from "./dictionaries";
 
 export async function getLocale(): Promise<Locale> {
   const l = await rootLang();
@@ -16,4 +16,20 @@ export async function getLocale(): Promise<Locale> {
 export async function getI18n() {
   const lang = await getLocale();
   return { lang, t: dictionaries[lang], href: (path: string) => localizePath(lang, path) };
+}
+
+/**
+ * URL canónica y alternativas hreflang de UNA página. Cada página la declara en su
+ * generateMetadata (el layout no, porque todas las páginas heredarían la de la portada).
+ */
+export async function pageAlternates(path: string) {
+  const lang = await getLocale();
+  return {
+    canonical: localizePath(lang, path),
+    languages: {
+      "es-MX": localizePath("es", path),
+      en: localizePath("en", path),
+      "x-default": localizePath("es", path),
+    },
+  };
 }
