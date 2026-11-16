@@ -16,7 +16,11 @@ export function getDb(): PrismaClient {
     throw new Error("DATABASE_URL no está configurada. Revisa .env.example.");
   }
   if (!globalForPrisma.prisma) {
-    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+    const adapter = new PrismaPg({
+      connectionString: process.env.DATABASE_URL,
+      // Tamaño del pool por proceso. En serverless conviene 1–5 (o un pooler como PgBouncer).
+      max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+    });
     globalForPrisma.prisma = new PrismaClient({ adapter });
   }
   return globalForPrisma.prisma;

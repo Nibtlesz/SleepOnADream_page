@@ -7,6 +7,7 @@
 import "server-only";
 import { SHIPPING_ZONES, storeConfig } from "@/config/store";
 import { sampleDiscounts } from "@/data/sample/discounts";
+import { getDb, isDbConfigured } from "@/lib/db";
 import { computeTotals, type DiscountRule } from "@/lib/commerce/pricing";
 import type { CartQuoteInput } from "@/lib/validation/schemas";
 import { findVariantsForQuote } from "@/server/queries/catalog";
@@ -30,10 +31,14 @@ export interface CartQuote {
   totals: ReturnType<typeof computeTotals>;
 }
 
-function findDiscount(code: string): DiscountRule | null {
-  // Fase 4: db.discountCode.findUnique + vigencia + límite de usos.
-  const found = sampleDiscounts.find((d) => d.code === code && d.active);
-  return found ?? null;
+async function findDiscount(code: string): Promise<DiscountRule | null> {
+  if (!isDbConfigured) return sampleDiscounts.find((d) => d.code === code && d.active) ?? null;
+  const d = await getDb().discountCode.findUnique({ where: { code } });
+  const now = new Date();
+  if (!d || !d.active) return null;
+  if ((d.startsAt && d.startsAt > now) || (d.endsAt && d.endsAt < now)) return null;
+  if (d.maxRedemptions != null && d.redemptions >= d.maxRedemptions) return null;
+  return { code: d.code, type: d.type, value: d.value, minSubtotal: d.minSubtotal };
 }
 
 function discountLabel(d: DiscountRule) {
@@ -64,7 +69,7 @@ export async function quoteCart(input: CartQuoteInput): Promise<CartQuote> {
   let discount: CartQuote["discount"] = null;
   let rule: DiscountRule | null = null;
   if (input.code) {
-    rule = findDiscount(input.code);
+    rule = await findDiscount(input.code);
     if (!rule) discount = { code: input.code, status: "invalid" };
     else if (subtotal < (rule.minSubtotal ?? 0)) {
       discount = { code: input.code, status: "min_not_met" };

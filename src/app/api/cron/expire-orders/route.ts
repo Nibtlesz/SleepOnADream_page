@@ -1,5 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
+import { revalidateTag } from "next/cache";
 import { orders } from "@/server/orders/repository";
+import { CATALOG_TAG } from "@/server/queries/catalog";
 
 /**
  * GET /api/cron/expire-orders — libera inventario de pedidos no pagados a tiempo.
@@ -15,5 +17,6 @@ export async function GET(request: Request) {
   if (!ok) return Response.json({ error: "unauthorized" }, { status: 401 });
 
   const expired = await orders.expireStale();
+  if (expired > 0) revalidateTag(CATALOG_TAG, "max");
   return Response.json({ expired });
 }

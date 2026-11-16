@@ -63,6 +63,12 @@ export function MercadoPagoBrick({
   useEffect(() => {
     submitRef.current = onSubmit;
   });
+  // Si el SDK no responde (bloqueador, red lenta, clave inválida), no dejar al comprador esperando.
+  useEffect(() => {
+    if (ready || loadError) return;
+    const t = setTimeout(() => setLoadError(true), 15_000);
+    return () => clearTimeout(t);
+  }, [ready, loadError]);
   const { email, firstName, lastName } = payer;
   const initialization = useMemo(
     () => ({ amount, payer: { email, firstName, lastName } }),
@@ -86,7 +92,9 @@ export function MercadoPagoBrick({
       )}
       {loadError && (
         <p role="alert" className="border border-ember/50 bg-blood/10 px-4 py-3 text-sm">
-          No pudimos cargar el formulario de pago. Revisa tu conexión o recarga la página.
+          No pudimos cargar el formulario de pago. Revisa tu conexión o desactiva bloqueadores de anuncios y{" "}
+          <button type="button" className="underline" onClick={() => location.reload()}>recarga la página</button>.
+          También puedes pagar por transferencia SPEI.
         </p>
       )}
       {PUBLIC_KEY && (
