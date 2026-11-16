@@ -33,7 +33,7 @@ export default async function StorePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-transparent" />
         <div className="container-site relative pt-36 pb-16 md:pt-48 md:pb-24">
           <p className="eyebrow mb-5 flex items-center gap-3"><span className="h-px w-8 bg-blood" aria-hidden />{t.store.eyebrow}</p>
-          <h1 className="display text-[clamp(3.5rem,12vw,10rem)]">Store</h1>
+          <h1 className="display text-[clamp(3.5rem,12vw,10rem)]">{t.nav.store}</h1>
           <p className="mt-6 max-w-lg text-mist">{t.store.intro}</p>
           {sample && <SampleBadge className="mt-6" label={t.common.sampleCatalog} />}
         </div>

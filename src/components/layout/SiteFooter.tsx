@@ -23,7 +23,7 @@ export async function SiteFooter() {
               {siteConfig.nav.slice(1).map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="text-mist transition-colors hover:text-bone">
-                    {item.label}
+                    {t.nav[item.key]}
                   </Link>
                 </li>
               ))}

@@ -21,7 +21,7 @@ export default async function ContactPage() {
 
   return (
     <>
-      <PageHeader eyebrow={t.contact.eyebrow} title="Contact" intro={t.contact.intro} />
+      <PageHeader eyebrow={t.contact.eyebrow} title={t.nav.contact} intro={t.contact.intro} />
       <div className="container-site grid gap-16 py-16 md:py-24 lg:grid-cols-12">
         <section className="lg:col-span-7" aria-label={t.contact.form}>
           <ContactForm />

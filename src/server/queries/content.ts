@@ -5,7 +5,8 @@
  */
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { sampleMembers, sampleNews, sampleReleases, sampleShows, sampleVideos } from "@/data/sample/content";
+import { officialVideos } from "@/data/official/videos";
+import { sampleMembers, sampleNews, sampleReleases, sampleShows } from "@/data/sample/content";
 import { getDb, isDbConfigured } from "@/lib/db";
 import type { BandMember, NewsPost, Release, Show, Video } from "@/lib/types";
 
@@ -51,7 +52,7 @@ export async function getVideos(): Promise<Video[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(CONTENT_TAGS.videos);
-  if (!isDbConfigured) return [...sampleVideos].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+  if (!isDbConfigured) return [...officialVideos].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
   const rows = await getDb().video.findMany({ where: { published: true }, orderBy: { publishedAt: "desc" } });
   return rows.map((v) => ({
     slug: v.slug,

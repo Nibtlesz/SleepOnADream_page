@@ -80,7 +80,7 @@ export function SiteHeader() {
           </Link>
 
           <nav aria-label={t.header.mainNav} className="hidden lg:block">
-            <ul className="flex items-center gap-8">
+            <ul className="flex items-center gap-5 xl:gap-8">
               {siteConfig.nav.map((item) => (
                 <li key={item.href}>
                   <Link
@@ -88,7 +88,7 @@ export function SiteHeader() {
                     aria-current={isActive(pathname, item.href) ? "page" : undefined}
                     className="link-underline pb-1 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-mist transition-colors hover:text-bone aria-[current=page]:text-bone"
                   >
-                    {item.label}
+                    {t.nav[item.key]}
                   </Link>
                 </li>
               ))}
@@ -149,7 +149,7 @@ export function SiteHeader() {
                     aria-current={isActive(pathname, item.href) ? "page" : undefined}
                     className="display block py-1 text-5xl text-bone/80 transition-colors hover:text-ember aria-[current=page]:text-ember sm:text-6xl"
                   >
-                    {item.label}
+                    {t.nav[item.key]}
                   </Link>
                 </motion.li>
               ))}

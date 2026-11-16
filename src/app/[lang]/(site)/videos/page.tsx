@@ -14,7 +14,7 @@ export default async function VideosPage() {
   const videos = await getVideos();
   return (
     <>
-      <PageHeader eyebrow={t.videos.eyebrow} title="Videos" />
+      <PageHeader eyebrow={t.videos.eyebrow} title={t.nav.videos} />
       <div className="container-site py-16 md:py-24">
         <VideoGallery videos={videos} />
       </div>

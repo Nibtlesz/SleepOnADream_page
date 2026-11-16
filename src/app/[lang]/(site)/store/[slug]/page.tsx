@@ -80,7 +80,7 @@ async function ProductContent({ params }: { params: PageProps<"/[lang]/store/[sl
       <div className="container-site pt-24 pb-24 md:pt-32">
         <nav aria-label={t.product.breadcrumb} className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <Link href="/store" className="inline-flex items-center gap-1 text-xs uppercase tracking-[0.2em] text-fog hover:text-bone">
-            <ChevronLeft className="h-4 w-4" /> Store / {categoryName(t, product.category.slug, product.category.name)}
+            <ChevronLeft className="h-4 w-4" /> {t.nav.store} / {categoryName(t, product.category.slug, product.category.name)}
           </Link>
           {product.isSample && <SampleBadge label={t.common.sampleProduct} />}
         </nav>

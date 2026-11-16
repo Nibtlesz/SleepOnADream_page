@@ -11,13 +11,14 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   locale: "es_MX",
   nav: [
-    { href: "/", label: "Home" },
-    { href: "/music", label: "Music" },
-    { href: "/videos", label: "Videos" },
-    { href: "/tour", label: "Tour" },
-    { href: "/store", label: "Store" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
+    // El texto visible de cada sección viene del diccionario (t.nav[key]) según el idioma.
+    { key: "home", href: "/", label: "Home" },
+    { key: "music", href: "/music", label: "Music" },
+    { key: "videos", href: "/videos", label: "Videos" },
+    { key: "tour", href: "/tour", label: "Tour" },
+    { key: "store", href: "/store", label: "Store" },
+    { key: "about", href: "/about", label: "About" },
+    { key: "contact", href: "/contact", label: "Contact" },
   ],
   socials: [
     { key: "instagram", label: "Instagram", short: "IG", url: null },

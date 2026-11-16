@@ -45,7 +45,7 @@ export default async function MusicPage() {
 
   return (
     <>
-      <PageHeader eyebrow={t.music.eyebrow} title="Music" intro={t.music.intro} />
+      <PageHeader eyebrow={t.music.eyebrow} title={t.nav.music} intro={t.music.intro} />
 
       <section className="container-site py-16 md:py-24" aria-labelledby="spotify-title">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">

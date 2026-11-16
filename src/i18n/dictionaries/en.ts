@@ -2,6 +2,15 @@ import type { Dictionary } from "./es";
 
 /** English UI copy. Must have the same keys as es.ts (enforced by the type). */
 const en: Dictionary = {
+  nav: {
+    home: "Home",
+    music: "Music",
+    videos: "Videos",
+    tour: "Tour",
+    store: "Store",
+    about: "About",
+    contact: "Contact",
+  },
   meta: {
     title: "Sleep On a Dream — Official site",
     description: "Official site of Sleep On a Dream: music, videos, tour dates and the official store.",
