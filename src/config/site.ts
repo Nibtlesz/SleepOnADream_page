@@ -24,8 +24,10 @@ export const siteConfig = {
     { key: "facebook", label: "Facebook", short: "FB", url: null },
     { key: "tiktok", label: "TikTok", short: "TT", url: null },
     { key: "youtube", label: "YouTube", short: "YT", url: null },
-    { key: "spotify", label: "Spotify", short: "SP", url: null },
+    { key: "spotify", label: "Spotify", short: "SP", url: "https://open.spotify.com/artist/3wfBf4MLEJBUrY6vAuM1c0" },
   ] as Array<{ key: string; label: string; short: string; url: string | null }>,
+  /** Perfil oficial de artista en Spotify (reproductor integrado en /music). */
+  spotifyArtistId: "3wfBf4MLEJBUrY6vAuM1c0",
   contact: {
     booking: null as string | null, // p. ej. "booking@dominio.mx"
     press: null as string | null,

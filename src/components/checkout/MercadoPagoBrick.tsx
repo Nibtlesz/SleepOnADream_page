@@ -9,6 +9,7 @@
  */
 import { initMercadoPago, Payment } from "@mercadopago/sdk-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { useI18n } from "@/i18n/client";
 
 // Este módulo solo se carga en el navegador (dynamic + ssr:false).
 const PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY;
@@ -54,6 +55,7 @@ export function MercadoPagoBrick({
   payer: { email: string; firstName?: string; lastName?: string };
   onSubmit: (data: BrickSubmission) => Promise<void>;
 }) {
+  const { lang, t } = useI18n();
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState(!PUBLIC_KEY);
 
@@ -88,18 +90,19 @@ export function MercadoPagoBrick({
   return (
     <div className="relative min-h-64">
       {!ready && !loadError && (
-        <div className="absolute inset-0 animate-pulse bg-coal" aria-busy aria-label="Cargando formulario de pago" />
+        <div className="absolute inset-0 animate-pulse bg-coal" aria-busy aria-label={t.checkout.loadingPayment} />
       )}
       {loadError && (
         <p role="alert" className="border border-ember/50 bg-blood/10 px-4 py-3 text-sm">
-          No pudimos cargar el formulario de pago. Revisa tu conexión o desactiva bloqueadores de anuncios y{" "}
-          <button type="button" className="underline" onClick={() => location.reload()}>recarga la página</button>.
-          También puedes pagar por transferencia SPEI.
+          {t.checkout.brickError}{" "}
+          <button type="button" className="underline" onClick={() => location.reload()}>{t.checkout.reload}</button>.{" "}
+          {t.checkout.orSpei}
         </p>
       )}
       {PUBLIC_KEY && (
         <Payment
-          locale="es-MX"
+          // El formulario de Mercado Pago se muestra en el idioma del sitio.
+          locale={lang === "en" ? "en-US" : "es-MX"}
           initialization={initialization}
           customization={CUSTOMIZATION}
           onReady={handleReady}

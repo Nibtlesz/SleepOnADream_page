@@ -12,8 +12,8 @@ export function formatMXN(cents: number): string {
 
 const TZ = "America/Mexico_City";
 
-export function formatDate(iso: string, opts: Intl.DateTimeFormatOptions = {}): string {
-  return new Intl.DateTimeFormat("es-MX", {
+export function formatDate(iso: string, opts: Intl.DateTimeFormatOptions = {}, locale = "es-MX"): string {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -23,10 +23,10 @@ export function formatDate(iso: string, opts: Intl.DateTimeFormatOptions = {}): 
 }
 
 /** Partes de fecha para el bloque de calendario de conciertos. */
-export function dateParts(iso: string) {
+export function dateParts(iso: string, locale = "es-MX") {
   const d = new Date(iso);
   const part = (o: Intl.DateTimeFormatOptions) =>
-    new Intl.DateTimeFormat("es-MX", { timeZone: TZ, ...o }).format(d);
+    new Intl.DateTimeFormat(locale, { timeZone: TZ, ...o }).format(d);
   return {
     day: part({ day: "2-digit" }),
     month: part({ month: "short" }).replace(".", "").toUpperCase(),

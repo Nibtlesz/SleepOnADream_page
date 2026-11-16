@@ -1,10 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useId } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { subscribeNewsletter } from "@/app/actions";
 import type { FormState } from "@/lib/validation/schemas";
+import { msg } from "@/i18n";
+import { useI18n } from "@/i18n/client";
+import { LocaleLink as Link } from "@/i18n/LocaleLink";
 import { cn } from "@/lib/cn";
 import { AntiSpamFields } from "./AntiSpamFields";
 
@@ -13,13 +15,14 @@ const initial: FormState = { status: "idle" };
 export function NewsletterForm({ className, compact = false }: { className?: string; compact?: boolean }) {
   const [state, action, pending] = useActionState(subscribeNewsletter, initial);
   const id = useId();
-  const emailError = state.fieldErrors?.email?.[0];
-  const consentError = state.fieldErrors?.consent?.[0];
+  const { t } = useI18n();
+  const emailError = msg(t, state.fieldErrors?.email?.[0]);
+  const consentError = msg(t, state.fieldErrors?.consent?.[0]);
 
   if (state.status === "success") {
     return (
       <p role="status" className={cn("flex items-center gap-3 text-sm text-bone", className)}>
-        <Check className="h-5 w-5 text-ember" aria-hidden /> {state.message}
+        <Check className="h-5 w-5 text-ember" aria-hidden /> {msg(t, state.message)}
       </p>
     );
   }
@@ -28,7 +31,7 @@ export function NewsletterForm({ className, compact = false }: { className?: str
     <form action={action} noValidate className={cn("relative", className)}>
       <AntiSpamFields />
       <label htmlFor={`${id}-email`} className="sr-only">
-        Correo electrónico
+        {t.newsletter.email}
       </label>
       <div className="flex">
         <input
@@ -47,22 +50,22 @@ export function NewsletterForm({ className, compact = false }: { className?: str
           disabled={pending}
           className="inline-flex shrink-0 items-center gap-2 bg-blood px-5 text-[0.7rem] font-semibold uppercase tracking-[0.2em] transition-colors hover:bg-ember disabled:opacity-50"
         >
-          {pending ? "Enviando…" : compact ? <ArrowRight className="h-4 w-4" aria-label="Suscribirme" /> : "Suscribirme"}
+          {pending ? t.common.sending : compact ? <ArrowRight className="h-4 w-4" aria-label={t.newsletter.subscribe} /> : t.newsletter.subscribe}
         </button>
       </div>
       <label className="mt-3 flex items-start gap-2.5 text-xs leading-relaxed text-fog">
         <input type="checkbox" name="consent" required className="mt-0.5 accent-ember" aria-invalid={Boolean(consentError)} />
         <span>
-          Acepto recibir noticias de la banda y el{" "}
+          {t.newsletter.consent}{" "}
           <Link href="/legal/privacidad" className="underline decoration-iron underline-offset-2 hover:text-bone">
-            aviso de privacidad
+            {t.newsletter.privacy}
           </Link>
           .
         </span>
       </label>
       {(state.status === "error" || emailError || consentError) && (
         <p id={`${id}-err`} role="alert" className="mt-2 text-xs text-ember">
-          {emailError ?? consentError ?? state.message}
+          {emailError ?? consentError ?? msg(t, state.message)}
         </p>
       )}
     </form>

@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: {
+    // 404 global: el sitio (app/[lang]) y el panel (app/admin) tienen layouts raíz distintos.
+    globalNotFound: true,
+  },
   turbopack: {
     rules: {
       "*.css": {

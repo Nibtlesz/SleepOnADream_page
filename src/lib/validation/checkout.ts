@@ -1,5 +1,5 @@
 /**
- * Validación del checkout. Los mismos esquemas se usan en cada paso del
+ * Validación del checkout. Los mensajes son claves traducibles (ver i18n/dictionaries → messages). Los mismos esquemas se usan en cada paso del
  * formulario (cliente) y en POST /api/checkout (servidor).
  */
 import { z } from "zod";
@@ -9,28 +9,28 @@ import { cartQuoteSchema } from "./schemas";
 const stateCodes = MX_STATES.map(([code]) => code) as [string, ...string[]];
 
 export const customerSchema = z.object({
-  email: z.email({ error: "Escribe un correo válido." }).trim().max(254),
-  name: z.string().trim().min(3, "Escribe tu nombre completo.").max(120),
+  email: z.email({ error: "v.email" }).trim().max(254),
+  name: z.string().trim().min(3, "v.fullName").max(120),
   phone: z
     .string()
     .transform((s) => s.replace(/\D/g, ""))
-    .pipe(z.string().regex(/^(52)?\d{10}$/, "Escribe un teléfono de 10 dígitos.")),
+    .pipe(z.string().regex(/^(52)?\d{10}$/, "v.phone")),
 });
 
 export const addressSchema = z.object({
-  recipient: z.string().trim().min(3, "¿Quién recibe el paquete?").max(120),
-  street: z.string().trim().min(2, "Escribe la calle.").max(120),
-  extNumber: z.string().trim().min(1, "Número exterior.").max(20),
+  recipient: z.string().trim().min(3, "v.recipient").max(120),
+  street: z.string().trim().min(2, "v.street").max(120),
+  extNumber: z.string().trim().min(1, "v.extNumber").max(20),
   intNumber: z.string().trim().max(20).optional().default(""),
-  neighborhood: z.string().trim().min(2, "Escribe la colonia.").max(120),
-  postalCode: z.string().trim().regex(/^\d{5}$/, "El código postal tiene 5 dígitos."),
-  city: z.string().trim().min(2, "Escribe la ciudad o municipio.").max(120),
-  state: z.enum(stateCodes, { error: "Selecciona un estado." }),
+  neighborhood: z.string().trim().min(2, "v.neighborhood").max(120),
+  postalCode: z.string().trim().regex(/^\d{5}$/, "v.postalCode"),
+  city: z.string().trim().min(2, "v.city").max(120),
+  state: z.enum(stateCodes, { error: "v.state" }),
   references: z.string().trim().max(240).optional().default(""),
 });
 
 export const shippingSchema = z.object({
-  rateId: z.string({ error: "Elige un método de envío." }).min(1, "Elige un método de envío.").max(32),
+  rateId: z.string({ error: "v.rate" }).min(1, "v.rate").max(32),
 });
 
 /** Cómo se cobra en el checkout. */
@@ -42,8 +42,8 @@ export const PAYMENT_METHODS = ["mercadopago", "card", "oxxo", "spei", "test"] a
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const paymentSchema = z.object({
-  paymentMethod: z.enum(CHECKOUT_PAYMENT, { error: "Elige un método de pago." }),
-  acceptTerms: z.literal(true, { error: "Debes aceptar los términos y el aviso de privacidad." }),
+  paymentMethod: z.enum(CHECKOUT_PAYMENT, { error: "v.paymentMethod" }),
+  acceptTerms: z.literal(true, { error: "v.terms" }),
 });
 
 /**
@@ -77,7 +77,7 @@ export const checkoutSchema = z.object({
   idempotencyKey: z.uuid(),
   customer: customerSchema,
   address: addressSchema,
-  items: cartQuoteSchema.shape.items.min(1, "Tu carrito está vacío."),
+  items: cartQuoteSchema.shape.items.min(1, "v.cartEmpty"),
   code: cartQuoteSchema.shape.code,
   rateId: shippingSchema.shape.rateId,
   paymentMethod: paymentSchema.shape.paymentMethod,

@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { siteConfig } from "@/config/site";
+import { stripLocale } from "@/i18n/config";
+import { useI18n } from "@/i18n/client";
+import { LocaleLink as Link } from "@/i18n/LocaleLink";
 import { cn } from "@/lib/cn";
 import { selectCount, useCart, useHydrated } from "@/store/cart";
+import { LanguageSwitch } from "./LanguageSwitch";
 import { Logo } from "./Logo";
 
 function isActive(pathname: string, href: string) {
@@ -15,18 +18,20 @@ function isActive(pathname: string, href: string) {
 }
 
 export function SiteHeader() {
-  const pathname = usePathname();
+  const { t } = useI18n();
+  const rawPathname = usePathname();
+  const pathname = stripLocale(rawPathname);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [menuPath, setMenuPath] = useState(pathname);
+  const [menuPath, setMenuPath] = useState(rawPathname);
   const count = useCart(selectCount);
   const openCart = useCart((s) => s.open);
   const hydrated = useHydrated();
   const menuButton = useRef<HTMLButtonElement>(null);
 
   // Cierra el menú móvil al navegar.
-  if (menuPath !== pathname) {
-    setMenuPath(pathname);
+  if (menuPath !== rawPathname) {
+    setMenuPath(rawPathname);
     setMenuOpen(false);
   }
 
@@ -59,7 +64,7 @@ export function SiteHeader() {
         href="#contenido"
         className="sr-only z-[60] bg-blood px-4 py-2 text-sm focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
       >
-        Saltar al contenido
+        {t.common.skipToContent}
       </a>
       <header
         className={cn(
@@ -70,11 +75,11 @@ export function SiteHeader() {
         )}
       >
         <div className="container-site flex h-16 items-center justify-between gap-6 md:h-20">
-          <Link href="/" className="text-xl md:text-2xl" aria-label={`${siteConfig.name} — inicio`}>
-            <Logo />
+          <Link href="/" className="shrink-0" aria-label={`${siteConfig.name} — ${t.header.home}`}>
+            <Logo variant="horizontal" priority sizes="220px" className="h-5 w-auto sm:h-6 lg:h-7" />
           </Link>
 
-          <nav aria-label="Principal" className="hidden lg:block">
+          <nav aria-label={t.header.mainNav} className="hidden lg:block">
             <ul className="flex items-center gap-8">
               {siteConfig.nav.map((item) => (
                 <li key={item.href}>
@@ -91,11 +96,12 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-1">
+            <LanguageSwitch className="mr-2 hidden sm:flex" />
             <button
               type="button"
               onClick={openCart}
               className="relative grid h-11 w-11 place-items-center text-bone transition-colors hover:text-ember"
-              aria-label={`Abrir carrito${hydrated && count ? `, ${count} artículos` : ""}`}
+              aria-label={`${t.header.openCart}${hydrated && count ? `, ${count} ${t.header.items}` : ""}`}
             >
               <ShoppingBag className="h-5 w-5" strokeWidth={1.6} />
               {hydrated && count > 0 && (
@@ -110,7 +116,7 @@ export function SiteHeader() {
               className="grid h-11 w-11 place-items-center lg:hidden"
               aria-expanded={menuOpen}
               aria-controls="menu-movil"
-              aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-label={menuOpen ? t.header.closeMenu : t.header.openMenu}
               onClick={() => setMenuOpen((o) => !o)}
             >
               {menuOpen ? <X className="h-6 w-6" strokeWidth={1.6} /> : <Menu className="h-6 w-6" strokeWidth={1.6} />}
@@ -123,7 +129,7 @@ export function SiteHeader() {
         {menuOpen && (
           <motion.nav
             id="menu-movil"
-            aria-label="Menú móvil"
+            aria-label={t.header.mobileMenu}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -148,7 +154,10 @@ export function SiteHeader() {
                 </motion.li>
               ))}
             </ul>
-            <p className="eyebrow">Sitio oficial · {siteConfig.name}</p>
+            <div className="flex items-center justify-between gap-4">
+              <p className="eyebrow">{t.common.officialSite} · {siteConfig.name}</p>
+              <LanguageSwitch />
+            </div>
           </motion.nav>
         )}
       </AnimatePresence>

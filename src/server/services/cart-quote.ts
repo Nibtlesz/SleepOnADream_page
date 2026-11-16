@@ -22,10 +22,17 @@ export interface CartQuote {
     available: number;
     issue: LineIssue | null;
   }>;
-  discount: { code: string; status: "applied" | "invalid" | "min_not_met"; label?: string } | null;
+  /** `type`/`value` permiten a la interfaz describir el descuento en cada idioma. */
+  discount: {
+    code: string;
+    status: "applied" | "invalid" | "min_not_met";
+    label?: string;
+    type?: DiscountRule["type"];
+    value?: number;
+  } | null;
   shipping: {
     zone: string | null;
-    options: Array<{ id: string; name: string; price: number; eta: string }>;
+    options: Array<{ id: string; name: string; price: number; eta: string; etaMin: number; etaMax: number }>;
     selectedId: string | null;
   };
   totals: ReturnType<typeof computeTotals>;
@@ -74,7 +81,7 @@ export async function quoteCart(input: CartQuoteInput): Promise<CartQuote> {
     else if (subtotal < (rule.minSubtotal ?? 0)) {
       discount = { code: input.code, status: "min_not_met" };
       rule = null;
-    } else discount = { code: rule.code, status: "applied", label: discountLabel(rule) };
+    } else discount = { code: rule.code, status: "applied", label: discountLabel(rule), type: rule.type, value: rule.value };
   }
 
   const zone = input.state ? SHIPPING_ZONES.find((z) => z.states.includes(input.state!)) ?? null : null;
@@ -83,6 +90,8 @@ export async function quoteCart(input: CartQuoteInput): Promise<CartQuote> {
     name: r.name,
     price: r.price,
     eta: `${r.etaDaysMin}–${r.etaDaysMax} días hábiles`,
+    etaMin: r.etaDaysMin,
+    etaMax: r.etaDaysMax,
   }));
   const selected = options.find((o) => o.id === input.rateId) ?? options[0] ?? null;
 

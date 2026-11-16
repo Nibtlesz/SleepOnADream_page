@@ -2,19 +2,15 @@ import { Ticket } from "lucide-react";
 import { buttonClass } from "@/components/ui/Button";
 import { SampleBadge } from "@/components/ui/SampleBadge";
 import { cn } from "@/lib/cn";
+import { INTL_LOCALE } from "@/i18n/config";
+import { getI18n } from "@/i18n/server";
 import { dateParts } from "@/lib/format";
 import type { Show } from "@/lib/types";
 
-const STATUS_LABEL: Record<Show["status"], string | null> = {
-  SCHEDULED: null,
-  SOLD_OUT: "Agotado",
-  CANCELLED: "Cancelado",
-  POSTPONED: "Pospuesto",
-};
-
-export function ShowRow({ show, past = false, detailed = false }: { show: Show; past?: boolean; detailed?: boolean }) {
-  const d = dateParts(show.startsAt);
-  const status = STATUS_LABEL[show.status];
+export async function ShowRow({ show, past = false, detailed = false }: { show: Show; past?: boolean; detailed?: boolean }) {
+  const { lang, t } = await getI18n();
+  const d = dateParts(show.startsAt, INTL_LOCALE[lang]);
+  const status = t.tour.status[show.status] || null;
   const inactive = show.status === "CANCELLED" || show.status === "POSTPONED";
   return (
     <li
@@ -39,7 +35,7 @@ export function ShowRow({ show, past = false, detailed = false }: { show: Show; 
           {!past && <span className="text-fog"> · {d.weekday} {d.time} h</span>}
         </p>
         {detailed && show.notes && <p className="mt-2 max-w-xl text-xs text-fog">{show.notes}</p>}
-        {show.isSample && <SampleBadge className="mt-2" label="Fecha de ejemplo" />}
+        {show.isSample && <SampleBadge className="mt-2" label={t.common.sampleDate} />}
       </div>
       {!past && (
         <div className="col-span-2 md:col-span-1">
@@ -49,11 +45,11 @@ export function ShowRow({ show, past = false, detailed = false }: { show: Show; 
             </span>
           ) : show.ticketUrl ? (
             <a href={show.ticketUrl} target="_blank" rel="noopener noreferrer" className={buttonClass("primary", "md")}>
-              <Ticket className="h-4 w-4" /> Boletos
+              <Ticket className="h-4 w-4" /> {t.tour.tickets}
             </a>
           ) : (
             <span className={buttonClass("outline", "md", "pointer-events-none opacity-50")} aria-disabled>
-              Boletos próximamente
+              {t.tour.ticketsSoon}
             </span>
           )}
         </div>

@@ -200,8 +200,18 @@ gestión de usuarios desde la interfaz.
 | 5. Integraciones | 🟡 | ✅ Mercado Pago (tarjeta, OXXO, SPEI, webhooks) · ⏳ correos reales, guías de envío |
 | 6. Pruebas y despliegue | ⏳ | Pruebas E2E del flujo de compra, auditoría de seguridad, Lighthouse, despliegue |
 
+## Marca
+
+- `public/brand/logo.webp` (dos líneas), `logo-horizontal.webp` (una línea) y `simbolo.webp`: archivos
+  oficiales (fondo transparente, gris #e2e1e4).
+- `Logo` usa la versión horizontal en el header y la de dos líneas en portada, footer y login;
+  `BrandSymbol` muestra el símbolo en el panel. Todos con `next/image`.
+- `npm run brand:icons` genera desde esos archivos el ícono de la pestaña (`favicon.ico`, `icon.png`),
+  el de iOS (`apple-icon.png`) y la imagen para redes sociales (`opengraph-image.png`). El símbolo va
+  sobre fondo negro para que se vea en pestañas claras y oscuras. Vuelve a ejecutarlo si cambia el arte.
+
 ## Contenido pendiente de la banda
 
-Logotipo oficial (SVG), fotografías, portadas, biografía e historia, integrantes y roles,
+Logotipo en SVG (ya está el oficial en WebP; un SVG se vería más nítido), fotografías, portadas, biografía e historia, integrantes y roles,
 enlaces oficiales de redes y plataformas, IDs de YouTube, fechas reales, catálogo con fotos,
 precios e inventario, correos de booking/prensa, textos legales.

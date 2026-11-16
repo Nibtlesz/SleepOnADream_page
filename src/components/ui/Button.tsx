@@ -1,5 +1,6 @@
-import Link from "next/link";
+import type Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { LocaleLink } from "@/i18n/LocaleLink";
 import { cn } from "@/lib/cn";
 
 type Variant = "primary" | "outline" | "ghost";
@@ -39,9 +40,9 @@ export function ButtonLink({
   ...props
 }: CommonProps & ComponentProps<typeof Link>) {
   return (
-    <Link className={buttonClass(variant, size, className)} {...props}>
+    <LocaleLink className={buttonClass(variant, size, className)} {...props}>
       {children}
-    </Link>
+    </LocaleLink>
   );
 }
 

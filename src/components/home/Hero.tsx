@@ -4,7 +4,9 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { Play, Headphones } from "lucide-react";
 import { useRef } from "react";
 import { ButtonLink } from "@/components/ui/Button";
+import { Logo } from "@/components/layout/Logo";
 import { SampleBadge } from "@/components/ui/SampleBadge";
+import { useI18n } from "@/i18n/client";
 
 /**
  * Portada inmersiva. El fondo es una escena CSS (niebla, luz roja, viñeta);
@@ -12,6 +14,7 @@ import { SampleBadge } from "@/components/ui/SampleBadge";
  * playsInline, poster optimizado) o por una imagen con <Image priority>.
  */
 export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample: boolean }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
@@ -28,7 +31,7 @@ export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample:
         };
 
   return (
-    <section ref={ref} className="relative isolate flex min-h-[100svh] items-end overflow-hidden" aria-label="Portada">
+    <section ref={ref} className="relative isolate flex min-h-[100svh] items-end overflow-hidden" aria-label={t.home.hero}>
       {/* Escena de fondo */}
       <motion.div style={{ y }} className="absolute inset-0 -z-10" aria-hidden>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_70%_35%,#3a050b_0%,#120204_45%,#070708_80%)]" />
@@ -41,30 +44,32 @@ export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample:
         <div className="absolute inset-0 shadow-[inset_0_0_200px_80px_#070708]" />
       </motion.div>
 
-      <motion.div style={{ opacity: fade }} className="container-site pb-16 md:pb-24">
+      <motion.div style={{ opacity: fade }} className="container-site pt-28 pb-16 md:pt-36 md:pb-24">
         <motion.div {...intro(0.1)} className="mb-6 flex flex-wrap items-center gap-3">
           <p className="eyebrow flex items-center gap-3 text-mist">
             <span className="h-px w-10 bg-ember" aria-hidden />
-            Nuevo lanzamiento · {latestTitle}
+            {t.home.newRelease} · {latestTitle}
           </p>
           {isSample && <SampleBadge />}
         </motion.div>
 
-        <motion.h1 {...intro(0.25)} className="display text-[clamp(4.2rem,15vw,15rem)] text-bone">
-          Sleep On
-          <br />
-          <span className="text-stroke">a</span> Dream
+        <motion.h1 {...intro(0.25)}>
+          <Logo
+            priority
+            sizes="(min-width: 768px) 46rem, 88vw"
+            className="h-auto w-[min(88vw,46rem,72svh)] drop-shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
+          />
         </motion.h1>
 
         <motion.div {...intro(0.5)} className="mt-10 flex flex-wrap gap-3">
           <ButtonLink href="/music#ultimo-lanzamiento" size="lg">
-            <Headphones className="h-4 w-4" /> Escuchar ahora
+            <Headphones className="h-4 w-4" /> {t.home.listenNow}
           </ButtonLink>
           <ButtonLink href="/videos" size="lg" variant="outline">
-            <Play className="h-4 w-4" /> Ver videoclip
+            <Play className="h-4 w-4" /> {t.home.watchVideo}
           </ButtonLink>
           <ButtonLink href="/store" size="lg" variant="ghost" className="underline decoration-ember decoration-2 underline-offset-8">
-            Tienda oficial
+            {t.home.officialStore}
           </ButtonLink>
         </motion.div>
       </motion.div>

@@ -8,7 +8,7 @@ export default function LoginPage() {
   return (
     <div className="grid min-h-dvh place-items-center px-5">
       <div className="w-full max-w-sm">
-        <Logo className="text-3xl" />
+        <Logo className="h-16 w-auto" sizes="160px" />
         <p className="eyebrow mt-3 mb-10">Panel administrativo</p>
         <LoginForm />
         <p className="mt-8 text-xs text-fog">Acceso exclusivo para personal autorizado. Las acciones quedan registradas.</p>

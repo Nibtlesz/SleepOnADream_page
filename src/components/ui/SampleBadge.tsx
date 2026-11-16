@@ -1,7 +1,11 @@
+"use client";
+
+import { useI18n } from "@/i18n/client";
 import { cn } from "@/lib/cn";
 
 /** Etiqueta visible para contenido provisional: evita confundirlo con información oficial. */
-export function SampleBadge({ className, label = "Ejemplo" }: { className?: string; label?: string }) {
+export function SampleBadge({ className, label }: { className?: string; label?: string }) {
+  const { t } = useI18n();
   return (
     <span
       className={cn(
@@ -10,7 +14,7 @@ export function SampleBadge({ className, label = "Ejemplo" }: { className?: stri
       )}
     >
       <span className="h-1 w-1 rounded-full bg-ember" aria-hidden />
-      {label}
+      {label ?? t.common.sample}
     </span>
   );
 }

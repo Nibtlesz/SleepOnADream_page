@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { X } from "lucide-react";
 import { ProductArt } from "@/components/ui/Art";
+import { fill } from "@/i18n";
+import { useI18n } from "@/i18n/client";
+import { LocaleLink as Link } from "@/i18n/LocaleLink";
 import { formatMXN } from "@/lib/format";
 import { useCart, type CartItem } from "@/store/cart";
 import { QuantityStepper } from "./QuantityStepper";
 
 export function CartLine({ item, notice }: { item: CartItem; notice?: string | null }) {
+  const { t } = useI18n();
   const setQuantity = useCart((s) => s.setQuantity);
   const remove = useCart((s) => s.remove);
   const color = item.variantLabel.split(" / ").find((p) => !/^(XS|S|M|L|XL|2XL|Única)$/.test(p));
@@ -24,7 +27,7 @@ export function CartLine({ item, notice }: { item: CartItem; notice?: string | n
             </Link>
             {item.variantLabel && <p className="mt-0.5 text-xs text-fog">{item.variantLabel}</p>}
           </div>
-          <button type="button" onClick={() => remove(item.variantId)} className="-mt-1 -mr-1 grid h-8 w-8 shrink-0 place-items-center text-fog hover:text-ember" aria-label={`Quitar ${item.name} del carrito`}>
+          <button type="button" onClick={() => remove(item.variantId)} className="-mt-1 -mr-1 grid h-8 w-8 shrink-0 place-items-center text-fog hover:text-ember" aria-label={fill(t.cart.removeItem, { name: item.name })}>
             <X className="h-4 w-4" />
           </button>
         </div>
