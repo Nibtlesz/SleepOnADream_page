@@ -11,7 +11,7 @@ import { useCartQuote } from "@/components/store/useCartQuote";
 import { ProductArt } from "@/components/ui/Art";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { MX_STATES } from "@/config/store";
-import { describeDiscount, fill, msg } from "@/i18n";
+import { describeDiscount, fill, k, msg } from "@/i18n";
 import { useI18n } from "@/i18n/client";
 import { LocaleLink as Link } from "@/i18n/LocaleLink";
 import { cn } from "@/lib/cn";
@@ -144,7 +144,7 @@ function ReviewBlock({ title, onEdit, children }: { title: string; onEdit: () =>
 
 export function CheckoutFlow({ paymentOptions }: { paymentOptions: PaymentOptionsView }) {
   const router = useRouter();
-  const { t } = useI18n();
+  const { lang, t } = useI18n();
   const hydrated = useHydrated();
   const items = useCart((s) => s.items);
   const code = useCart((s) => s.code);
@@ -226,7 +226,7 @@ export function CheckoutFlow({ paymentOptions }: { paymentOptions: PaymentOption
   }
 
   function submitShipping() {
-    if (!quote?.shipping.selectedId) return setErrors({ rateId: "v.rate" });
+    if (!quote?.shipping.selectedId) return setErrors({ rateId: k("v.rate") });
     setShipping(address.state, quote.shipping.selectedId);
     go(3);
   }
@@ -236,8 +236,8 @@ export function CheckoutFlow({ paymentOptions }: { paymentOptions: PaymentOption
    * el pago no se completó para que el Brick permita reintentar.
    */
   async function pay(mp?: BrickSubmission) {
-    if (!method) return setErrors({ paymentMethod: "v.paymentMethod" });
-    if (!acceptTerms) return setErrors({ acceptTerms: "v.terms" });
+    if (!method) return setErrors({ paymentMethod: k("v.paymentMethod") });
+    if (!acceptTerms) return setErrors({ acceptTerms: k("v.terms") });
     if (!quote || blocking) return go(3);
 
     const payload = {
@@ -262,7 +262,7 @@ export function CheckoutFlow({ paymentOptions }: { paymentOptions: PaymentOption
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, idempotencyKey, mercadopago }),
+        body: JSON.stringify({ ...payload, idempotencyKey, mercadopago, locale: lang }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {

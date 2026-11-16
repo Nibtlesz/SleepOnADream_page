@@ -359,6 +359,8 @@ model Order {
   /// Token aleatorio para que el comprador consulte su pedido sin cuenta (URL de confirmación).
   accessToken         String              @unique
   paymentMethod       String // "mercadopago" (aún sin elegir) | "card" | "oxxo" | "spei" | "test"
+  /// Idioma en que se hizo la compra ("es" | "en"): confirmación, correos y textos guardados.
+  locale              String              @default("es")
   /// Instrucciones para pagos diferidos (ficha OXXO, CLABE SPEI). Nunca datos de tarjeta.
   paymentInstructions Json?
   status              OrderStatus         @default(PENDING_PAYMENT)

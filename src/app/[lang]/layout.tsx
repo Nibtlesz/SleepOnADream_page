@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { lang as rootLang } from "next/root-params";
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/site";
-import { HTML_LANG, isLocale, LOCALES, localizePath, OG_LOCALE } from "@/i18n/config";
+import { HTML_LANG, isLocale, LOCALES, OG_LOCALE } from "@/i18n/config";
 import { I18nProvider } from "@/i18n/client";
-import { dictionaries } from "@/i18n";
+import { dictionaries } from "@/i18n/dictionaries";
 import { fontClasses } from "../fonts";
 import "../globals.css";
 
@@ -21,10 +21,6 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: t.meta.title, template: `%s · ${siteConfig.name}` },
     description: t.meta.description,
     applicationName: siteConfig.name,
-    alternates: {
-      canonical: localizePath(lang, "/"),
-      languages: { "es-MX": "/", en: "/en", "x-default": "/" },
-    },
     openGraph: {
       type: "website",
       locale: OG_LOCALE[lang],
@@ -49,7 +45,9 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   return (
     <html lang={HTML_LANG[lang]} data-scroll-behavior="smooth" className={fontClasses}>
       <body className="min-h-dvh">
-        <I18nProvider lang={lang}>{children}</I18nProvider>
+        <I18nProvider lang={lang} dict={dictionaries[lang]}>
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

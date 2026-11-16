@@ -88,6 +88,7 @@ export default async function OrderDetailPage({ params }: PageProps<"/admin/pedi
               <p>{order.customer.name}</p>
               <p className="text-sm text-mist">{order.email}</p>
               <p className="text-sm text-mist">{order.customer.phone}</p>
+              <p className="mt-2 text-xs text-fog">Compró en {order.locale === "en" ? "inglés" : "español"} · los correos se le envían en ese idioma.</p>
             </Card>
             <Card title="Dirección de envío">
               <address className="text-sm not-italic text-mist">

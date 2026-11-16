@@ -418,6 +418,15 @@ const en: Dictionary = {
     privacy: "privacy notice",
   },
   social: { pending: "link pending" },
+  emails: {
+    confirmedSubject: "We've confirmed your order {number}",
+    confirmedText: "Hi {name}, we received your payment of {total}. We'll let you know when your order ships.",
+    shippedSubject: "Your order {number} is on its way",
+    shippedText: "Your order shipped with {carrier}. Tracking number: {tracking}",
+    trackingLine: "Tracking: {url}",
+    deliveredSubject: "Your order {number} was delivered",
+    deliveredText: "Thanks for your purchase! We hope you enjoy it.",
+  },
   notFound: { code: "Error 404", title: "Lost in the dream", text: "The page you're looking for doesn't exist." },
   messages: {
     "v.email": "Enter a valid email.",
@@ -438,6 +447,7 @@ const en: Dictionary = {
     "v.paymentMethod": "Choose a payment method.",
     "v.terms": "You must accept the terms and the privacy notice.",
     "v.cartEmpty": "Your cart is empty.",
+    "v.tooLong": "This is too long.",
     "form.check": "Check your details.",
     "form.checkFields": "Check the highlighted fields.",
     "form.rateLimited": "Too many attempts. Try again in a few minutes.",

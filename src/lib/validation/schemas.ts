@@ -1,12 +1,13 @@
 /**
  * Esquemas de validación compartidos (frontend y backend).
- * Los mensajes de error son claves (p. ej. "v.email") que la interfaz traduce al idioma activo.
+ * Los mensajes de error son claves (p. ej. "v.email", marcadas con `k()`) que la interfaz traduce al idioma activo.
  * El servidor vuelve a validar todo: nunca se confía en el cliente.
  */
 import { z } from "zod";
+import { k } from "@/i18n";
 import { storeConfig } from "@/config/store";
 
-const email = z.email({ error: "v.email" }).trim().max(254);
+const email = z.email({ error: k("v.email") }).trim().max(254, k("v.tooLong"));
 
 /** Campo trampa: los humanos no lo ven; si viene con valor, es un bot. */
 const honeypot = z.string().max(0).optional().or(z.literal(""));
@@ -15,16 +16,16 @@ const renderedAt = z.coerce.number().int().positive();
 
 export const newsletterSchema = z.object({
   email,
-  consent: z.literal("on", { error: "v.consent" }),
+  consent: z.literal("on", { error: k("v.consent") }),
   company: honeypot,
   renderedAt,
 });
 
 export const contactSchema = z.object({
-  name: z.string().trim().min(2, "v.name").max(100),
+  name: z.string().trim().min(2, k("v.name")).max(100, k("v.tooLong")),
   email,
-  topic: z.enum(["general", "booking", "press", "store"], { error: "v.topic" }),
-  message: z.string().trim().min(10, "v.message").max(4000),
+  topic: z.enum(["general", "booking", "press", "store"], { error: k("v.topic") }),
+  message: z.string().trim().min(10, k("v.message")).max(4000, k("v.tooLong")),
   company: honeypot,
   renderedAt,
 });
@@ -38,7 +39,7 @@ export const cartQuoteSchema = z.object({
       }),
     )
     .max(50),
-  code: z.string().trim().toUpperCase().max(32).optional().nullable(),
+  code: z.string().trim().toUpperCase().max(32, k("v.tooLong")).optional().nullable(),
   state: z.string().max(8).optional().nullable(),
   rateId: z.string().max(32).optional().nullable(),
 });

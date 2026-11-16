@@ -3,34 +3,36 @@
  * formulario (cliente) y en POST /api/checkout (servidor).
  */
 import { z } from "zod";
+import { k } from "@/i18n";
 import { MX_STATES } from "@/config/store";
+import { LOCALES } from "@/i18n/config";
 import { cartQuoteSchema } from "./schemas";
 
 const stateCodes = MX_STATES.map(([code]) => code) as [string, ...string[]];
 
 export const customerSchema = z.object({
-  email: z.email({ error: "v.email" }).trim().max(254),
-  name: z.string().trim().min(3, "v.fullName").max(120),
+  email: z.email({ error: k("v.email") }).trim().max(254, k("v.tooLong")),
+  name: z.string().trim().min(3, k("v.fullName")).max(120, k("v.tooLong")),
   phone: z
     .string()
     .transform((s) => s.replace(/\D/g, ""))
-    .pipe(z.string().regex(/^(52)?\d{10}$/, "v.phone")),
+    .pipe(z.string().regex(/^(52)?\d{10}$/, k("v.phone"))),
 });
 
 export const addressSchema = z.object({
-  recipient: z.string().trim().min(3, "v.recipient").max(120),
-  street: z.string().trim().min(2, "v.street").max(120),
-  extNumber: z.string().trim().min(1, "v.extNumber").max(20),
-  intNumber: z.string().trim().max(20).optional().default(""),
-  neighborhood: z.string().trim().min(2, "v.neighborhood").max(120),
-  postalCode: z.string().trim().regex(/^\d{5}$/, "v.postalCode"),
-  city: z.string().trim().min(2, "v.city").max(120),
-  state: z.enum(stateCodes, { error: "v.state" }),
-  references: z.string().trim().max(240).optional().default(""),
+  recipient: z.string().trim().min(3, k("v.recipient")).max(120, k("v.tooLong")),
+  street: z.string().trim().min(2, k("v.street")).max(120, k("v.tooLong")),
+  extNumber: z.string().trim().min(1, k("v.extNumber")).max(20, k("v.tooLong")),
+  intNumber: z.string().trim().max(20, k("v.tooLong")).optional().default(""),
+  neighborhood: z.string().trim().min(2, k("v.neighborhood")).max(120, k("v.tooLong")),
+  postalCode: z.string().trim().regex(/^\d{5}$/, k("v.postalCode")),
+  city: z.string().trim().min(2, k("v.city")).max(120, k("v.tooLong")),
+  state: z.enum(stateCodes, { error: k("v.state") }),
+  references: z.string().trim().max(240, k("v.tooLong")).optional().default(""),
 });
 
 export const shippingSchema = z.object({
-  rateId: z.string({ error: "v.rate" }).min(1, "v.rate").max(32),
+  rateId: z.string({ error: k("v.rate") }).min(1, k("v.rate")).max(32),
 });
 
 /** Cómo se cobra en el checkout. */
@@ -42,8 +44,8 @@ export const PAYMENT_METHODS = ["mercadopago", "card", "oxxo", "spei", "test"] a
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const paymentSchema = z.object({
-  paymentMethod: z.enum(CHECKOUT_PAYMENT, { error: "v.paymentMethod" }),
-  acceptTerms: z.literal(true, { error: "v.terms" }),
+  paymentMethod: z.enum(CHECKOUT_PAYMENT, { error: k("v.paymentMethod") }),
+  acceptTerms: z.literal(true, { error: k("v.terms") }),
 });
 
 /**
@@ -77,12 +79,14 @@ export const checkoutSchema = z.object({
   idempotencyKey: z.uuid(),
   customer: customerSchema,
   address: addressSchema,
-  items: cartQuoteSchema.shape.items.min(1, "v.cartEmpty"),
+  items: cartQuoteSchema.shape.items.min(1, k("v.cartEmpty")),
   code: cartQuoteSchema.shape.code,
   rateId: shippingSchema.shape.rateId,
   paymentMethod: paymentSchema.shape.paymentMethod,
   acceptTerms: paymentSchema.shape.acceptTerms,
   mercadopago: mercadoPagoSubmissionSchema.optional(),
+  /** Idioma en que compra la persona (para confirmación y correos). */
+  locale: z.enum(LOCALES).default("es"),
 }).refine((d) => d.paymentMethod !== "mercadopago" || d.mercadopago, {
   error: "Faltan los datos de pago.",
   path: ["mercadopago"],

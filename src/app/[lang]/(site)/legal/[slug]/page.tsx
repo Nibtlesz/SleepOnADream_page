@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { siteConfig } from "@/config/site";
-import { getI18n } from "@/i18n/server";
+import { getI18n, pageAlternates } from "@/i18n/server";
 
 type LegalSlug = (typeof siteConfig.legal)[number]["slug"];
 const isLegalSlug = (s: string): s is LegalSlug => siteConfig.legal.some((l) => l.slug === s);
@@ -15,7 +15,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/[lang]/legal/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const { t } = await getI18n();
-  return { title: isLegalSlug(slug) ? t.legal[slug] : t.legal.eyebrow };
+  if (!isLegalSlug(slug)) return { title: t.legal.eyebrow };
+  return { title: t.legal[slug], alternates: await pageAlternates(`/legal/${slug}`) };
 }
 
 /**

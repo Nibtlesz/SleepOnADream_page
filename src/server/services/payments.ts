@@ -8,6 +8,8 @@
 import "server-only";
 import { formatMXN, orderNumber } from "@/lib/format";
 import { orders, type PaymentUpdate } from "@/server/orders/repository";
+import { fill } from "@/i18n";
+import { getDictionary } from "@/i18n/dictionaries";
 import { sendEmail } from "./email";
 
 export type PaymentResult = "approved" | "rejected" | "pending";
@@ -51,10 +53,11 @@ export async function applyPaymentResult(params: {
 
   const updated = await orders.markPaid(orderId, payment);
   if (updated?.status === "PAID") {
+    const mail = getDictionary(updated.locale).emails;
     await sendEmail({
       to: updated.email,
-      subject: `Confirmamos tu pedido ${orderNumber(updated.number)}`,
-      text: `Hola ${updated.customerName}, recibimos tu pago por ${formatMXN(updated.total)}. Te avisaremos cuando tu pedido sea enviado.`,
+      subject: fill(mail.confirmedSubject, { number: orderNumber(updated.number) }),
+      text: fill(mail.confirmedText, { name: updated.customerName, total: formatMXN(updated.total) }),
     });
   }
   return "ok";

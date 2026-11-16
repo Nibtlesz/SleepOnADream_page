@@ -42,8 +42,9 @@ export function proxy(request: NextRequest) {
     return remember(NextResponse.redirect(url), "es");
   }
 
-  // Sin prefijo: si la persona eligió inglés antes, la llevamos a /en.
-  if (request.cookies.get(LOCALE_COOKIE)?.value === "en" && !isPrefetch) {
+  // Sin prefijo: si la persona eligió inglés antes, la llevamos a /en. También en la
+  // precarga: si se reescribiera a español, el router podría mostrar esa versión al hacer clic.
+  if (request.cookies.get(LOCALE_COOKIE)?.value === "en") {
     const url = request.nextUrl.clone();
     url.pathname = pathname === "/" ? "/en" : `/en${pathname}`;
     return NextResponse.redirect(url);
