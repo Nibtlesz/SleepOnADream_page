@@ -183,6 +183,21 @@ videos), así que los cambios se ven al instante.
 zonas y tarifas de envío desde el panel (hoy en `src/config/store.ts`), textos de "About" y
 gestión de usuarios desde la interfaz.
 
+### Conciertos desde Bandsintown
+
+Los conciertos que la banda crea en Bandsintown llegan solos al sitio (`src/server/services/bandsintown.ts`):
+
+- **Configurar:** en Bandsintown for Artists → Settings → General → *Get API Key*; copiar la clave en
+  `BANDSINTOWN_APP_ID` (y `BANDSINTOWN_ARTIST` si el nombre en Bandsintown cambia).
+- **Cada hora:** `GET /api/cron/sync-bandsintown` (protegido con `CRON_SECRET`). El workflow
+  `.github/workflows/sync-bandsintown.yml` lo llama cada hora; requiere los secretos de GitHub `SITE_URL` y
+  `CRON_SECRET`. Sirve igual cualquier otro programador (Vercel Cron, cron del servidor, cron-job.org).
+- **Al momento:** botón *Sincronizar con Bandsintown* en `/admin/conciertos`.
+- **Qué se sincroniza:** fecha y hora, ciudad, estado, recinto y enlace de boletos (se cambian en
+  Bandsintown) y "agotado". Información adicional, cartel, estado y visibilidad se editan en el panel.
+  Un concierto futuro que desaparece de Bandsintown se oculta (no se borra). Los conciertos creados a mano
+  en el panel no se tocan. Las horas se guardan como hora del centro de México, igual que en el panel.
+
 ## Cumplimiento en México (pendiente de asesoría legal)
 
 - Aviso de privacidad (LFPDPPP) y consentimiento expreso en el newsletter (campo `consentAt`).

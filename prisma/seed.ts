@@ -127,13 +127,19 @@ async function main() {
       data: { startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, notes: s.notes, status: s.status, published: false, isSample: true },
     });
   }
-  // Conciertos oficiales: se crean o actualizan por id.
+  // Conciertos oficiales: se crean o actualizan (por su ID de Bandsintown si lo tienen).
   for (const s of officialShows) {
     const data = {
       startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, posterUrl: s.posterUrl,
       ticketUrl: s.ticketUrl, notes: s.notes, status: s.status, published: true, isSample: false,
     };
-    await db.show.upsert({ where: { id: s.id }, create: { id: s.id, ...data }, update: data });
+    // Si ya llegó por la sincronización de Bandsintown, se actualiza ese registro en vez de duplicarlo.
+    const bandsintownId = s.ticketUrl?.match(/bandsintown\.com\/e\/(\d+)/)?.[1];
+    await db.show.upsert({
+      where: bandsintownId ? { bandsintownId } : { id: s.id },
+      create: { id: s.id, ...data, bandsintownId },
+      update: data,
+    });
   }
   await db.newsPost.deleteMany({ where: { isSample: true } });
   for (const n of sampleNews) {

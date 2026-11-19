@@ -9,6 +9,7 @@ import { firstErrors } from "@/lib/validation/checkout";
 import { audit } from "@/server/audit";
 import { assertAdmin } from "@/server/auth/dal";
 import { CONTENT_TAGS } from "@/server/queries/content";
+import { isBandsintownConfigured, syncBandsintownShows } from "@/server/services/bandsintown";
 
 const slugify = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
@@ -57,6 +58,23 @@ export async function saveShow(_prev: ActionState, formData: FormData): Promise<
   await audit(user, d.id ? "show.update" : "show.create", "Show", show.id, { city: d.city, status: d.status });
   updateTag(CONTENT_TAGS.shows);
   redirect("/admin/conciertos?guardado=1");
+}
+
+/** Botón "Sincronizar con Bandsintown" del panel (lo mismo que hace la tarea programada cada hora). */
+export async function syncBandsintown() {
+  const user = await assertAdmin("content");
+  if (!isBandsintownConfigured()) redirect("/admin/conciertos?sync=sin-clave");
+  let summary: string;
+  try {
+    const r = await syncBandsintownShows();
+    await audit(user, "show.sync", "Show", "bandsintown", r);
+    updateTag(CONTENT_TAGS.shows);
+    summary = `${r.created}-${r.updated}-${r.hidden}`;
+  } catch (error) {
+    console.error("[bandsintown] sincronización fallida:", error);
+    summary = "error";
+  }
+  redirect(`/admin/conciertos?sync=${summary}`);
 }
 
 // ─── Videos ───────────────────────────────────────────────────
