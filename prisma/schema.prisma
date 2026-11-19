@@ -93,6 +93,8 @@ model Release {
   appleMusicUrl   String?
   youtubeMusicUrl String?
   embedUrl        String? // reproductor integrado (Spotify / YouTube)
+  /// ID del lanzamiento en Apple Music si llegó (o se liga) por la sincronización automática.
+  appleMusicId    String?     @unique
   isFeatured      Boolean     @default(false)
   published       Boolean     @default(false)
   isSample        Boolean     @default(false) // contenido de ejemplo (se muestra con etiqueta)

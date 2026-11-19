@@ -93,16 +93,19 @@ async function main() {
       },
     });
   }
-  // Lanzamientos oficiales: se crean o actualizan por slug (sus canciones se reemplazan).
+  // Lanzamientos oficiales: se crean o actualizan (por su ID de Apple Music si ya llegaron por la
+  // sincronización automática; si no, por slug). Sus canciones se reemplazan.
   for (const r of officialReleases) {
+    const appleMusicId = r.links.appleMusic?.match(/\/(\d+)(?:[?#]|$)/)?.[1] ?? null;
     const data = {
       title: r.title, type: r.type, releaseDate: new Date(r.releaseDate), description: r.description,
-      coverImageUrl: r.coverImageUrl, spotifyUrl: r.links.spotify, appleMusicUrl: r.links.appleMusic,
+      coverImageUrl: r.coverImageUrl, spotifyUrl: r.links.spotify, appleMusicUrl: r.links.appleMusic, appleMusicId,
       youtubeMusicUrl: r.links.youtubeMusic, embedUrl: r.embedUrl, isFeatured: r.isFeatured, published: true, isSample: false,
     };
     const tracks = { create: r.tracks.map((t) => ({ position: t.position, title: t.title, durationS: t.durationS })) };
+    const synced = appleMusicId ? await db.release.findUnique({ where: { appleMusicId }, select: { slug: true } }) : null;
     await db.release.upsert({
-      where: { slug: r.slug },
+      where: { slug: synced?.slug ?? r.slug },
       create: { slug: r.slug, ...data, tracks },
       update: { ...data, tracks: { deleteMany: {}, ...tracks } },
     });

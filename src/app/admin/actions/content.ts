@@ -10,6 +10,7 @@ import { audit } from "@/server/audit";
 import { assertAdmin } from "@/server/auth/dal";
 import { CONTENT_TAGS } from "@/server/queries/content";
 import { isBandsintownConfigured, syncBandsintownShows } from "@/server/services/bandsintown";
+import { isMusicSyncConfigured, syncReleases } from "@/server/services/music-sync";
 
 const slugify = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
@@ -197,6 +198,23 @@ export async function saveRelease(_prev: ActionState, formData: FormData): Promi
   await audit(user, d.id ? "release.update" : "release.create", "Release", release.id, { title: d.title, tracks: tracks.length });
   updateTag(CONTENT_TAGS.releases);
   redirect("/admin/musica?guardado=1");
+}
+
+/** Botón "Sincronizar con Apple Music / Spotify" del panel (lo mismo que la tarea de cada hora). */
+export async function syncMusic() {
+  const user = await assertAdmin("content");
+  if (!isMusicSyncConfigured()) redirect("/admin/musica?sync=error");
+  let query: string;
+  try {
+    const r = await syncReleases();
+    await audit(user, "release.sync", "Release", "apple-music", r);
+    updateTag(CONTENT_TAGS.releases);
+    query = new URLSearchParams({ sync: `${r.created}-${r.updated}-${r.spotifyLinked}`, spotify: r.spotify, ...(r.featured ? { destacado: r.featured } : {}) }).toString();
+  } catch (error) {
+    console.error("[música] sincronización fallida:", error);
+    query = "sync=error";
+  }
+  redirect(`/admin/musica?${query}`);
 }
 
 // ─── Eliminar ─────────────────────────────────────────────────

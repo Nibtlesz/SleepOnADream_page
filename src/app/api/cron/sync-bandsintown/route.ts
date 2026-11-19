@@ -5,7 +5,7 @@ import { isBandsintownConfigured, syncBandsintownShows } from "@/server/services
 
 /**
  * GET /api/cron/sync-bandsintown — trae los conciertos de Bandsintown al sitio.
- * Programar cada hora (ver .github/workflows/sync-bandsintown.yml) con la cabecera
+ * Programar cada hora (ver .github/workflows/sync-contenido.yml) con la cabecera
  * `Authorization: Bearer $CRON_SECRET`.
  */
 export async function GET(request: Request) {

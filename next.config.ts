@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "i.ytimg.com" },
       // Portadas de lanzamientos alojadas en Spotify y Apple Music.
       { protocol: "https", hostname: "i.scdn.co" },
-      { protocol: "https", hostname: "is1-ssl.mzstatic.com" },
+      { protocol: "https", hostname: "*.mzstatic.com" }, // Apple usa is1…is5-ssl
       // Agregar aquí el dominio del almacenamiento de objetos (S3 / R2) en Fase 4.
     ],
   },

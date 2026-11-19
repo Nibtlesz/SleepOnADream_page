@@ -1,9 +1,10 @@
-# Sincroniza cada hora los conciertos de Bandsintown con el sitio publicado.
+# Cada hora: trae al sitio publicado los conciertos de Bandsintown y los lanzamientos nuevos
+# de Apple Music / Spotify.
 # Requiere en GitHub → Settings → Secrets and variables → Actions:
 #   SITE_URL     URL pública del sitio, p. ej. https://sleeponadream.mx
 #   CRON_SECRET  el mismo valor que la variable CRON_SECRET del servidor
 # Mientras falte alguno, el trabajo termina sin hacer nada.
-name: Sincronizar conciertos (Bandsintown)
+name: Sincronizar conciertos y música
 
 on:
   schedule:
@@ -17,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Llamar a /api/cron/sync-bandsintown
+      - name: Llamar a las tareas de sincronización
         env:
           SITE_URL: ${{ secrets.SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
@@ -26,6 +27,12 @@ jobs:
             echo "Faltan los secretos SITE_URL o CRON_SECRET: no se sincroniza."
             exit 0
           fi
-          curl --fail-with-body --silent --show-error --max-time 60 \
-            -H "Authorization: Bearer $CRON_SECRET" \
-            "${SITE_URL%/}/api/cron/sync-bandsintown"
+          status=0
+          for task in sync-bandsintown sync-music; do
+            echo "→ $task"
+            curl --fail-with-body --silent --show-error --max-time 120 \
+              -H "Authorization: Bearer $CRON_SECRET" \
+              "${SITE_URL%/}/api/cron/$task" || status=1
+            echo
+          done
+          exit $status

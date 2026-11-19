@@ -25,6 +25,12 @@ export default async function ReleaseEditPage({ params }: PageProps<"/admin/musi
     <>
       <AdminLink href="/admin/musica" className="text-xs">← Música</AdminLink>
       <div className="mt-4"><PageTitle title={release?.title ?? "Nuevo lanzamiento"} /></div>
+      {release?.appleMusicId && (
+        <p className="mb-5 border border-smoke px-4 py-3 text-sm text-mist">
+          Este lanzamiento está ligado a Apple Music: si allá cambia la fecha (por ejemplo, en un pre-lanzamiento), se actualiza
+          sola. Lo demás que edites aquí se respeta.
+        </p>
+      )}
       <ActionForm action={saveRelease} className="grid gap-5 border border-smoke bg-coal p-5 md:grid-cols-2">
         {release && <input type="hidden" name="id" value={release.id} />}
         <Input label="Título" name="title" required defaultValue={release?.title} />
