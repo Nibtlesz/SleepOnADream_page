@@ -35,6 +35,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       // Miniaturas de YouTube para la galería de videos.
       { protocol: "https", hostname: "i.ytimg.com" },
+      // Portadas de lanzamientos alojadas en Spotify y Apple Music.
+      { protocol: "https", hostname: "i.scdn.co" },
+      { protocol: "https", hostname: "is1-ssl.mzstatic.com" },
       // Agregar aquí el dominio del almacenamiento de objetos (S3 / R2) en Fase 4.
     ],
   },

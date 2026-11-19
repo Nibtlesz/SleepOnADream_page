@@ -44,6 +44,7 @@
 
 @theme inline {
   --font-display: var(--font-display-face), "Impact", "Arial Narrow", sans-serif;
+  --font-script: var(--font-script-face), var(--font-display-face), "Impact", sans-serif;
   --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
 }
 

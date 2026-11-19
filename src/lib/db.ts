@@ -18,8 +18,10 @@ export function getDb(): PrismaClient {
   if (!globalForPrisma.prisma) {
     const adapter = new PrismaPg({
       connectionString: process.env.DATABASE_URL,
-      // Tamaño del pool por proceso. En serverless conviene 1–5 (o un pooler como PgBouncer).
-      max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+      // Tamaño del pool por proceso. Al compilar, Next prerenderiza con varios procesos en
+      // paralelo: 1 conexión por proceso evita saturar bases pequeñas. En ejecución se usa
+      // DATABASE_POOL_MAX (10 por defecto; en serverless conviene 1–5 o un pooler).
+      max: process.env.NEXT_PHASE === "phase-production-build" ? 1 : Number(process.env.DATABASE_POOL_MAX ?? 10),
     });
     globalForPrisma.prisma = new PrismaClient({ adapter });
   }

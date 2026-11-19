@@ -9,8 +9,10 @@ import { config } from "dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { sampleCategories, sampleProducts } from "../src/data/sample/catalog";
+import { officialReleases } from "../src/data/official/releases";
+import { officialShows } from "../src/data/official/shows";
 import { officialVideos } from "../src/data/official/videos";
-import { sampleMembers, sampleNews, sampleReleases, sampleShows } from "../src/data/sample/content";
+import { hiddenSampleReleases, sampleMembers, sampleNews, sampleReleases, sampleShows } from "../src/data/sample/content";
 import { sampleDiscounts } from "../src/data/sample/discounts";
 import { SHIPPING_ZONES } from "../src/config/store";
 import { hashPassword, PASSWORD_MIN_LENGTH } from "../src/server/auth/password";
@@ -81,13 +83,28 @@ async function main() {
   await db.track.deleteMany({ where: { release: { isSample: true } } });
   await db.video.deleteMany({ where: { isSample: true } });
   await db.release.deleteMany({ where: { isSample: true } });
-  for (const r of sampleReleases) {
+  const hidden = new Set(hiddenSampleReleases.map((r) => r.slug));
+  for (const r of [...sampleReleases, ...hiddenSampleReleases]) {
     await db.release.create({
       data: {
         slug: r.slug, title: r.title, type: r.type, releaseDate: new Date(r.releaseDate), description: r.description,
-        isFeatured: r.isFeatured, published: true, isSample: true,
+        isFeatured: r.isFeatured, published: !hidden.has(r.slug), isSample: true,
         tracks: { create: r.tracks.map((t) => ({ position: t.position, title: t.title, durationS: t.durationS })) },
       },
+    });
+  }
+  // Lanzamientos oficiales: se crean o actualizan por slug (sus canciones se reemplazan).
+  for (const r of officialReleases) {
+    const data = {
+      title: r.title, type: r.type, releaseDate: new Date(r.releaseDate), description: r.description,
+      coverImageUrl: r.coverImageUrl, spotifyUrl: r.links.spotify, appleMusicUrl: r.links.appleMusic,
+      youtubeMusicUrl: r.links.youtubeMusic, embedUrl: r.embedUrl, isFeatured: r.isFeatured, published: true, isSample: false,
+    };
+    const tracks = { create: r.tracks.map((t) => ({ position: t.position, title: t.title, durationS: t.durationS })) };
+    await db.release.upsert({
+      where: { slug: r.slug },
+      create: { slug: r.slug, ...data, tracks },
+      update: { ...data, tracks: { deleteMany: {}, ...tracks } },
     });
   }
   // Videos oficiales: se crean o actualizan por slug (los de ejemplo ya se eliminaron arriba).
@@ -104,10 +121,19 @@ async function main() {
     await db.video.upsert({ where: { slug: v.slug }, create: { slug: v.slug, ...data }, update: data });
   }
   await db.show.deleteMany({ where: { isSample: true } });
+  // Conciertos de ejemplo: se conservan OCULTOS (no publicados) ahora que hay fechas oficiales.
   for (const s of sampleShows) {
     await db.show.create({
-      data: { startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, notes: s.notes, status: s.status, published: true, isSample: true },
+      data: { startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, notes: s.notes, status: s.status, published: false, isSample: true },
     });
+  }
+  // Conciertos oficiales: se crean o actualizan por id.
+  for (const s of officialShows) {
+    const data = {
+      startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, posterUrl: s.posterUrl,
+      ticketUrl: s.ticketUrl, notes: s.notes, status: s.status, published: true, isSample: false,
+    };
+    await db.show.upsert({ where: { id: s.id }, create: { id: s.id, ...data }, update: data });
   }
   await db.newsPost.deleteMany({ where: { isSample: true } });
   for (const n of sampleNews) {

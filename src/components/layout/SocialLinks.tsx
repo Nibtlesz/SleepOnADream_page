@@ -1,7 +1,11 @@
+import { hasSocialIcon, SocialIcon } from "@/components/icons/SocialIcon";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/cn";
 
-/** Enlaces a redes. Los que aún no tienen URL oficial se muestran deshabilitados. */
+/**
+ * Enlaces a redes con su ícono. "md": solo íconos (pie de página, portada); "lg": ícono + nombre
+ * (contacto). Los que aún no tienen URL oficial se muestran apagados y sin enlace.
+ */
 export function SocialLinks({
   className,
   size = "md",
@@ -15,18 +19,35 @@ export function SocialLinks({
     <ul className={cn("flex flex-wrap gap-2", className)}>
       {siteConfig.socials.map((s) => {
         const cls = cn(
-          "grid place-items-center border border-smoke font-semibold tracking-[0.12em] transition-colors",
-          size === "lg" ? "h-14 min-w-14 px-4 text-xs" : "h-10 min-w-10 px-3 text-[0.65rem]",
+          "flex items-center justify-center gap-3 border border-smoke transition-colors",
+          size === "lg" ? "h-14 min-w-14 px-4 text-xs font-semibold uppercase tracking-[0.12em]" : "h-10 w-10",
+        );
+        const content = (
+          <>
+            {hasSocialIcon(s.key) ? (
+              <SocialIcon name={s.key} className={size === "lg" ? "h-5 w-5" : "h-[18px] w-[18px]"} />
+            ) : (
+              size === "md" && <span className="text-[0.65rem] font-semibold tracking-[0.12em]">{s.short}</span>
+            )}
+            {size === "lg" && <span>{s.label}</span>}
+          </>
         );
         return (
           <li key={s.key}>
             {s.url ? (
-              <a href={s.url} target="_blank" rel="noopener noreferrer" className={cn(cls, "text-mist hover:border-ember hover:text-bone")} aria-label={s.label}>
-                {size === "lg" ? s.label : s.short}
+              <a
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(cls, "text-mist hover:border-ember hover:text-ember")}
+                aria-label={s.label}
+                title={s.label}
+              >
+                {content}
               </a>
             ) : (
               <span className={cn(cls, "cursor-not-allowed text-iron")} title={`${s.label}: ${pendingLabel}`} aria-label={`${s.label} (${pendingLabel})`}>
-                {size === "lg" ? s.label : s.short}
+                {content}
               </span>
             )}
           </li>

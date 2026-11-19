@@ -18,7 +18,7 @@ npm install
 ```
 
 Base de datos local (Prisma Postgres; no requiere Docker). Copia la URL `postgres://…` que imprime a
-`DATABASE_URL` en `.env.local` y pon `DATABASE_POOL_MAX="1"`:
+`DATABASE_URL` en `.env.local`:
 
 ```bash
 npm run db:dev

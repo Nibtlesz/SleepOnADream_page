@@ -3,6 +3,7 @@
  * fotografías ni portadas oficiales. Se sustituye por <Image> cuando el producto,
  * lanzamiento o integrante tenga `imageUrl` cargada desde el panel.
  */
+import Image from "next/image";
 import type { ArtKind } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
@@ -130,7 +131,25 @@ export function ProductArt({
 }
 
 /** Portada abstracta determinista para lanzamientos sin arte oficial. */
-export function CoverArt({ seed, title, className }: { seed: string; title: string; className?: string }) {
+export function CoverArt({
+  seed,
+  title,
+  src,
+  className,
+}: {
+  seed: string;
+  title: string;
+  /** Portada oficial; sin ella se dibuja el arte provisional. */
+  src?: string | null;
+  className?: string;
+}) {
+  if (src) {
+    return (
+      <div className={cn("relative aspect-square w-full overflow-hidden bg-coal", className)}>
+        <Image src={src} alt={title} fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover" />
+      </div>
+    );
+  }
   const h = hash(seed);
   const rings = 5 + (h % 5);
   const cx = 30 + (h % 40);
