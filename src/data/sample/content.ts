@@ -14,7 +14,14 @@ const tracks = (n: number) =>
 
 const noLinks = { spotify: null, appleMusic: null, youtubeMusic: null };
 
-export const sampleReleases: Release[] = [
+/** Lanzamientos de ejemplo visibles (ninguno: ya hay discografía oficial en data/official/releases.ts). */
+export const sampleReleases: Release[] = [];
+
+/**
+ * Lanzamientos de ejemplo OCULTOS por ahora (no se borran: se pueden volver a usar). El seed
+ * los carga como no publicados; para mostrarlos, publícalos desde el panel o muévelos a `sampleReleases`.
+ */
+export const hiddenSampleReleases: Release[] = [
   {
     slug: "lanzamiento-ejemplo-sencillo",
     title: "Sencillo de ejemplo",
@@ -59,7 +66,7 @@ export const sampleReleases: Release[] = [
   },
 ];
 
-/** Recintos y fechas ficticios. Fechas relativas a nov-2026 para ver ambos estados. */
+/** Recintos y fechas ficticios. OCULTOS: el seed los carga como no publicados (ya hay fechas oficiales). */
 export const sampleShows: Show[] = [
   { id: "show-1", startsAt: "2026-12-05T03:00:00.000Z", city: "Ciudad de México", state: "CDMX", venue: "Recinto de ejemplo A", posterUrl: null, ticketUrl: null, notes: "Información adicional de ejemplo: puertas 19:00 h, todas las edades.", status: "SCHEDULED", isSample: true },
   { id: "show-2", startsAt: "2026-12-13T03:00:00.000Z", city: "Guadalajara", state: "Jalisco", venue: "Recinto de ejemplo B", posterUrl: null, ticketUrl: null, notes: null, status: "SOLD_OUT", isSample: true },

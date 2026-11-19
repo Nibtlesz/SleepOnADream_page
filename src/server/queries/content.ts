@@ -5,8 +5,10 @@
  */
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { officialReleases } from "@/data/official/releases";
+import { officialShows } from "@/data/official/shows";
 import { officialVideos } from "@/data/official/videos";
-import { sampleMembers, sampleNews, sampleReleases, sampleShows } from "@/data/sample/content";
+import { sampleMembers, sampleNews, sampleReleases } from "@/data/sample/content";
 import { getDb, isDbConfigured } from "@/lib/db";
 import type { BandMember, NewsPost, Release, Show, Video } from "@/lib/types";
 
@@ -22,7 +24,7 @@ export async function getReleases(): Promise<Release[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(CONTENT_TAGS.releases);
-  if (!isDbConfigured) return [...sampleReleases].sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+  if (!isDbConfigured) return [...officialReleases, ...sampleReleases].sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
   const rows = await getDb().release.findMany({
     where: { published: true },
     include: { tracks: { orderBy: { position: "asc" } } },
@@ -66,7 +68,7 @@ export async function getVideos(): Promise<Video[]> {
 }
 
 async function allShows(): Promise<Show[]> {
-  if (!isDbConfigured) return sampleShows;
+  if (!isDbConfigured) return officialShows;
   const rows = await getDb().show.findMany({ where: { published: true }, orderBy: { startsAt: "asc" } });
   return rows.map((s) => ({
     id: s.id,

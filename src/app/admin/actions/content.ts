@@ -9,6 +9,8 @@ import { firstErrors } from "@/lib/validation/checkout";
 import { audit } from "@/server/audit";
 import { assertAdmin } from "@/server/auth/dal";
 import { CONTENT_TAGS } from "@/server/queries/content";
+import { isBandsintownConfigured, syncBandsintownShows } from "@/server/services/bandsintown";
+import { isMusicSyncConfigured, syncReleases } from "@/server/services/music-sync";
 
 const slugify = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
@@ -57,6 +59,23 @@ export async function saveShow(_prev: ActionState, formData: FormData): Promise<
   await audit(user, d.id ? "show.update" : "show.create", "Show", show.id, { city: d.city, status: d.status });
   updateTag(CONTENT_TAGS.shows);
   redirect("/admin/conciertos?guardado=1");
+}
+
+/** Botón "Sincronizar con Bandsintown" del panel (lo mismo que hace la tarea programada cada hora). */
+export async function syncBandsintown() {
+  const user = await assertAdmin("content");
+  if (!isBandsintownConfigured()) redirect("/admin/conciertos?sync=sin-clave");
+  let summary: string;
+  try {
+    const r = await syncBandsintownShows();
+    await audit(user, "show.sync", "Show", "bandsintown", r);
+    updateTag(CONTENT_TAGS.shows);
+    summary = `${r.created}-${r.updated}-${r.hidden}`;
+  } catch (error) {
+    console.error("[bandsintown] sincronización fallida:", error);
+    summary = "error";
+  }
+  redirect(`/admin/conciertos?sync=${summary}`);
 }
 
 // ─── Videos ───────────────────────────────────────────────────
@@ -179,6 +198,23 @@ export async function saveRelease(_prev: ActionState, formData: FormData): Promi
   await audit(user, d.id ? "release.update" : "release.create", "Release", release.id, { title: d.title, tracks: tracks.length });
   updateTag(CONTENT_TAGS.releases);
   redirect("/admin/musica?guardado=1");
+}
+
+/** Botón "Sincronizar con Apple Music / Spotify" del panel (lo mismo que la tarea de cada hora). */
+export async function syncMusic() {
+  const user = await assertAdmin("content");
+  if (!isMusicSyncConfigured()) redirect("/admin/musica?sync=error");
+  let query: string;
+  try {
+    const r = await syncReleases();
+    await audit(user, "release.sync", "Release", "apple-music", r);
+    updateTag(CONTENT_TAGS.releases);
+    query = new URLSearchParams({ sync: `${r.created}-${r.updated}-${r.spotifyLinked}`, spotify: r.spotify, ...(r.featured ? { destacado: r.featured } : {}) }).toString();
+  } catch (error) {
+    console.error("[música] sincronización fallida:", error);
+    query = "sync=error";
+  }
+  redirect(`/admin/musica?${query}`);
 }
 
 // ─── Eliminar ─────────────────────────────────────────────────

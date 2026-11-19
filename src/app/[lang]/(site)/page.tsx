@@ -42,7 +42,7 @@ export default async function HomePage() {
             <Reveal className="md:col-span-6 lg:col-span-5">
               <div className="relative">
                 <div className="absolute -inset-6 -z-10 bg-blood/25 blur-3xl" aria-hidden />
-                <CoverArt seed={latest.slug} title={latest.title} className="shadow-2xl shadow-black" />
+                <CoverArt seed={latest.slug} title={latest.title} src={latest.coverImageUrl} className="shadow-2xl shadow-black" />
               </div>
             </Reveal>
             <Reveal delay={0.1} className="md:col-span-6 lg:col-span-6 lg:col-start-7">
@@ -94,7 +94,7 @@ export default async function HomePage() {
               <PhotoPlaceholder tone="red" label={t.home.campaignImage} className="min-h-72 md:min-h-[28rem]" />
               <div className="flex flex-col justify-center bg-ash p-8 md:p-14">
                 <p className="eyebrow mb-4">{t.home.storeEyebrow}</p>
-                <h2 id="store-title" className="display text-5xl md:text-7xl">
+                <h2 id="store-title" className="display font-script pt-[0.15em] leading-[1.05] text-5xl md:text-7xl">
                   {t.home.storeTitle[0]} <span className="text-ember">{t.home.storeTitle[1]}</span>
                 </h2>
                 <p className="mt-5 max-w-md text-mist">

@@ -74,7 +74,7 @@ export default async function MusicPage() {
           >
             <Reveal className="md:col-span-5">
               <div className="group relative overflow-hidden">
-                <CoverArt seed={r.slug} title={r.title} className="transition-transform duration-700 group-hover:scale-[1.03]" />
+                <CoverArt seed={r.slug} title={r.title} src={r.coverImageUrl} className="transition-transform duration-700 group-hover:scale-[1.03]" />
               </div>
             </Reveal>
             <Reveal delay={0.1} className="md:col-span-7">

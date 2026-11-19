@@ -23,6 +23,13 @@ export default async function ShowEditPage({ params }: PageProps<"/admin/concier
     <>
       <AdminLink href="/admin/conciertos" className="text-xs">← Conciertos</AdminLink>
       <div className="mt-4"><PageTitle title={show ? `${show.city}` : "Nuevo concierto"} /></div>
+      {show?.bandsintownId && (
+        <p className="mb-5 border border-smoke px-4 py-3 text-sm text-mist">
+          Este concierto viene de Bandsintown: la fecha, la hora, la ciudad, el estado, el recinto y el enlace de boletos se
+          actualizan desde allá cada hora (cámbialos en Bandsintown). Aquí puedes editar la información adicional, el cartel,
+          el estado y si se muestra en el sitio.
+        </p>
+      )}
       <ActionForm action={saveShow} className="grid gap-5 border border-smoke bg-coal p-5 md:grid-cols-2">
         {show && <input type="hidden" name="id" value={show.id} />}
         <Input label="Fecha" name="date" type="date" required defaultValue={mxDateInput(show?.startsAt ?? null)} />

@@ -93,6 +93,8 @@ model Release {
   appleMusicUrl   String?
   youtubeMusicUrl String?
   embedUrl        String? // reproductor integrado (Spotify / YouTube)
+  /// ID del lanzamiento en Apple Music si llegó (o se liga) por la sincronización automática.
+  appleMusicId    String?     @unique
   isFeatured      Boolean     @default(false)
   published       Boolean     @default(false)
   isSample        Boolean     @default(false) // contenido de ejemplo (se muestra con etiqueta)
@@ -143,21 +145,23 @@ enum ShowStatus {
 /// Los eventos pasados se calculan por fecha (startsAt < ahora) y se muestran
 /// en el historial; no se requiere un proceso que los "mueva".
 model Show {
-  id        String     @id @default(cuid())
-  startsAt  DateTime
-  timezone  String     @default("America/Mexico_City")
-  city      String
-  state     String
-  country   String     @default("MX")
-  venue     String
-  posterUrl String?
-  ticketUrl String?
-  notes     String?    @db.Text
-  status    ShowStatus @default(SCHEDULED)
-  published Boolean    @default(false)
-  isSample  Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id            String     @id @default(cuid())
+  startsAt      DateTime
+  timezone      String     @default("America/Mexico_City")
+  city          String
+  state         String
+  country       String     @default("MX")
+  venue         String
+  posterUrl     String?
+  ticketUrl     String?
+  notes         String?    @db.Text
+  status        ShowStatus @default(SCHEDULED)
+  published     Boolean    @default(false)
+  isSample      Boolean    @default(false)
+  /// ID del evento en Bandsintown si el concierto se sincroniza desde ahí (fecha, recinto y boletos los manda Bandsintown).
+  bandsintownId String?    @unique
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   @@index([published, startsAt])
 }

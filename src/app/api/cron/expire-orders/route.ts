@@ -1,5 +1,5 @@
-import { timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
+import { isCronAuthorized } from "@/server/cron";
 import { orders } from "@/server/orders/repository";
 import { CATALOG_TAG } from "@/server/queries/catalog";
 
@@ -9,12 +9,7 @@ import { CATALOG_TAG } from "@/server/queries/catalog";
  * con la cabecera `Authorization: Bearer $CRON_SECRET`.
  */
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  const auth = request.headers.get("authorization") ?? "";
-  const expected = `Bearer ${secret}`;
-  const ok =
-    Boolean(secret) && auth.length === expected.length && timingSafeEqual(Buffer.from(auth), Buffer.from(expected));
-  if (!ok) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (!isCronAuthorized(request)) return Response.json({ error: "unauthorized" }, { status: 401 });
 
   const expired = await orders.expireStale();
   if (expired > 0) revalidateTag(CATALOG_TAG, "max");

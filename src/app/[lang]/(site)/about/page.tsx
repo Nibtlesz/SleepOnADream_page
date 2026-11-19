@@ -104,7 +104,7 @@ export default async function AboutPage() {
           {releases.slice(0, 3).map((r) => (
             <li key={r.slug}>
               <Link href={`/music#${r.slug}`} className="group block">
-                <div className="overflow-hidden"><CoverArt seed={r.slug} title={r.title} className="transition-transform duration-700 group-hover:scale-105" /></div>
+                <div className="overflow-hidden"><CoverArt seed={r.slug} title={r.title} src={r.coverImageUrl} className="transition-transform duration-700 group-hover:scale-105" /></div>
                 <p className="mt-3 font-semibold group-hover:text-ember">{r.title}</p>
               </Link>
             </li>

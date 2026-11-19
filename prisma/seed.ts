@@ -9,8 +9,10 @@ import { config } from "dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { sampleCategories, sampleProducts } from "../src/data/sample/catalog";
+import { officialReleases } from "../src/data/official/releases";
+import { officialShows } from "../src/data/official/shows";
 import { officialVideos } from "../src/data/official/videos";
-import { sampleMembers, sampleNews, sampleReleases, sampleShows } from "../src/data/sample/content";
+import { hiddenSampleReleases, sampleMembers, sampleNews, sampleReleases, sampleShows } from "../src/data/sample/content";
 import { sampleDiscounts } from "../src/data/sample/discounts";
 import { SHIPPING_ZONES } from "../src/config/store";
 import { hashPassword, PASSWORD_MIN_LENGTH } from "../src/server/auth/password";
@@ -81,13 +83,31 @@ async function main() {
   await db.track.deleteMany({ where: { release: { isSample: true } } });
   await db.video.deleteMany({ where: { isSample: true } });
   await db.release.deleteMany({ where: { isSample: true } });
-  for (const r of sampleReleases) {
+  const hidden = new Set(hiddenSampleReleases.map((r) => r.slug));
+  for (const r of [...sampleReleases, ...hiddenSampleReleases]) {
     await db.release.create({
       data: {
         slug: r.slug, title: r.title, type: r.type, releaseDate: new Date(r.releaseDate), description: r.description,
-        isFeatured: r.isFeatured, published: true, isSample: true,
+        isFeatured: r.isFeatured, published: !hidden.has(r.slug), isSample: true,
         tracks: { create: r.tracks.map((t) => ({ position: t.position, title: t.title, durationS: t.durationS })) },
       },
+    });
+  }
+  // Lanzamientos oficiales: se crean o actualizan (por su ID de Apple Music si ya llegaron por la
+  // sincronización automática; si no, por slug). Sus canciones se reemplazan.
+  for (const r of officialReleases) {
+    const appleMusicId = r.links.appleMusic?.match(/\/(\d+)(?:[?#]|$)/)?.[1] ?? null;
+    const data = {
+      title: r.title, type: r.type, releaseDate: new Date(r.releaseDate), description: r.description,
+      coverImageUrl: r.coverImageUrl, spotifyUrl: r.links.spotify, appleMusicUrl: r.links.appleMusic, appleMusicId,
+      youtubeMusicUrl: r.links.youtubeMusic, embedUrl: r.embedUrl, isFeatured: r.isFeatured, published: true, isSample: false,
+    };
+    const tracks = { create: r.tracks.map((t) => ({ position: t.position, title: t.title, durationS: t.durationS })) };
+    const synced = appleMusicId ? await db.release.findUnique({ where: { appleMusicId }, select: { slug: true } }) : null;
+    await db.release.upsert({
+      where: { slug: synced?.slug ?? r.slug },
+      create: { slug: r.slug, ...data, tracks },
+      update: { ...data, tracks: { deleteMany: {}, ...tracks } },
     });
   }
   // Videos oficiales: se crean o actualizan por slug (los de ejemplo ya se eliminaron arriba).
@@ -104,9 +124,24 @@ async function main() {
     await db.video.upsert({ where: { slug: v.slug }, create: { slug: v.slug, ...data }, update: data });
   }
   await db.show.deleteMany({ where: { isSample: true } });
+  // Conciertos de ejemplo: se conservan OCULTOS (no publicados) ahora que hay fechas oficiales.
   for (const s of sampleShows) {
     await db.show.create({
-      data: { startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, notes: s.notes, status: s.status, published: true, isSample: true },
+      data: { startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, notes: s.notes, status: s.status, published: false, isSample: true },
+    });
+  }
+  // Conciertos oficiales: se crean o actualizan (por su ID de Bandsintown si lo tienen).
+  for (const s of officialShows) {
+    const data = {
+      startsAt: new Date(s.startsAt), city: s.city, state: s.state, venue: s.venue, posterUrl: s.posterUrl,
+      ticketUrl: s.ticketUrl, notes: s.notes, status: s.status, published: true, isSample: false,
+    };
+    // Si ya llegó por la sincronización de Bandsintown, se actualiza ese registro en vez de duplicarlo.
+    const bandsintownId = s.ticketUrl?.match(/bandsintown\.com\/e\/(\d+)/)?.[1];
+    await db.show.upsert({
+      where: bandsintownId ? { bandsintownId } : { id: s.id },
+      create: { id: s.id, ...data, bandsintownId },
+      update: data,
     });
   }
   await db.newsPost.deleteMany({ where: { isSample: true } });
