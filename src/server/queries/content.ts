@@ -5,10 +5,11 @@
  */
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { officialMembers } from "@/data/official/members";
 import { officialReleases } from "@/data/official/releases";
 import { officialShows } from "@/data/official/shows";
 import { officialVideos } from "@/data/official/videos";
-import { sampleMembers, sampleNews, sampleReleases } from "@/data/sample/content";
+import { sampleNews, sampleReleases } from "@/data/sample/content";
 import { getDb, isDbConfigured } from "@/lib/db";
 import type { BandMember, NewsPost, Release, Show, Video } from "@/lib/types";
 
@@ -116,7 +117,7 @@ export async function getBandMembers(): Promise<BandMember[]> {
   "use cache";
   cacheLife("days");
   cacheTag(CONTENT_TAGS.band);
-  if (!isDbConfigured) return sampleMembers;
+  if (!isDbConfigured) return officialMembers;
   const rows = await getDb().bandMember.findMany({ where: { active: true }, orderBy: { position: "asc" } });
   return rows.map((m) => ({ id: m.id, name: m.name, role: m.role, photoUrl: m.photoUrl }));
 }

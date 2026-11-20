@@ -9,10 +9,11 @@ import { config } from "dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { sampleCategories, sampleProducts } from "../src/data/sample/catalog";
+import { officialMembers } from "../src/data/official/members";
 import { officialReleases } from "../src/data/official/releases";
 import { officialShows } from "../src/data/official/shows";
 import { officialVideos } from "../src/data/official/videos";
-import { hiddenSampleReleases, sampleMembers, sampleNews, sampleReleases, sampleShows } from "../src/data/sample/content";
+import { hiddenSampleReleases, sampleNews, sampleReleases, sampleShows } from "../src/data/sample/content";
 import { sampleDiscounts } from "../src/data/sample/discounts";
 import { SHIPPING_ZONES } from "../src/config/store";
 import { hashPassword, PASSWORD_MIN_LENGTH } from "../src/server/auth/password";
@@ -150,8 +151,11 @@ async function main() {
       data: { slug: n.slug, title: n.title, excerpt: n.excerpt, body: n.excerpt, publishedAt: new Date(n.publishedAt), published: true, isSample: true },
     });
   }
-  if ((await db.bandMember.count()) === 0) {
-    await db.bandMember.createMany({ data: sampleMembers.map((m, i) => ({ name: m.name, role: m.role, position: i })) });
+  // Integrantes oficiales (se crean o actualizan por id); los provisionales de ejemplo se eliminan.
+  await db.bandMember.deleteMany({ where: { name: "Integrante por confirmar" } });
+  for (const [position, m] of officialMembers.entries()) {
+    const data = { name: m.name, role: m.role, photoUrl: m.photoUrl, position, active: true };
+    await db.bandMember.upsert({ where: { id: m.id }, create: { id: m.id, ...data }, update: data });
   }
 
   // Administrador inicial (opcional)

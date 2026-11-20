@@ -28,15 +28,22 @@ export const siteConfig = {
     { key: "youtube", label: "YouTube", short: "YT", url: "https://www.youtube.com/@sleeponadreamofficial" },
     { key: "spotify", label: "Spotify", short: "SP", url: "https://open.spotify.com/artist/3wfBf4MLEJBUrY6vAuM1c0" },
   ] as Array<{ key: string; label: string; short: string; url: string | null }>,
+  /** Foto grupal oficial (apertura de "Nosotros"). Foto: Noridexs. */
+  groupPhoto: "/images/band/grupo.jpg",
   /** Perfil oficial de artista en Spotify (reproductor integrado en /music). */
   spotifyArtistId: "3wfBf4MLEJBUrY6vAuM1c0",
   /** Perfil de artista en Apple Music (la sincronización de lanzamientos lee su catálogo). */
   appleMusicArtistId: "1418098370",
   contact: {
-    booking: null as string | null, // p. ej. "booking@dominio.mx"
-    press: null as string | null,
+    booking: "hmproducciones.oficial@gmail.com" as string | null,
+    /** Quién atiende las contrataciones (se muestra junto al correo). */
+    bookingContact: "Mariana Hernandez" as string | null,
+    press: "sleepona@gmail.com" as string | null,
+    /** Sin correo de tienda por ahora: el canal no se muestra en Contacto. */
     store: null as string | null,
   },
+  /** Kit de prensa descargable (public/press/). */
+  epkUrl: "/press/sleep-on-a-dream-epk.pdf",
   legal: [
     { slug: "privacidad", label: "Aviso de privacidad" },
     { slug: "terminos", label: "Términos y condiciones" },
