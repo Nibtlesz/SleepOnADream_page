@@ -3,7 +3,7 @@
  * Sirven solo para maquetar. Se reemplazarán por el contenido real
  * administrado desde el panel (Fase 4). Todos llevan `isSample: true`.
  */
-import type { BandMember, NewsPost, Release, Show } from "@/lib/types";
+import type { NewsPost, Release, Show } from "@/lib/types";
 
 const tracks = (n: number) =>
   Array.from({ length: n }, (_, i) => ({
@@ -83,10 +83,3 @@ export const sampleNews: NewsPost[] = [
 ];
 
 /** Número de integrantes y roles por confirmar. */
-export const sampleMembers: BandMember[] = [
-  { id: "m1", name: "Integrante por confirmar", role: "Rol por confirmar", photoUrl: null },
-  { id: "m2", name: "Integrante por confirmar", role: "Rol por confirmar", photoUrl: null },
-  { id: "m3", name: "Integrante por confirmar", role: "Rol por confirmar", photoUrl: null },
-  { id: "m4", name: "Integrante por confirmar", role: "Rol por confirmar", photoUrl: null },
-  { id: "m5", name: "Integrante por confirmar", role: "Rol por confirmar", photoUrl: null },
-];

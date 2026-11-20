@@ -51,6 +51,24 @@ export function categoryName(dict: Dictionary, slug: string, fallback: string): 
   return dict.store.categoryNames[slug] ?? fallback;
 }
 
+const ROLE_EN: Array<[RegExp, string]> = [
+  [/\bbater[ií]a\b/gi, "drums"],
+  [/\bguitarras?\b/gi, "guitar"],
+  [/\bbajo\b/gi, "bass"],
+  [/\bvoz\b/gi, "vocals"],
+  [/\bguturales\b/gi, "screams"],
+  [/\bcoros\b/gi, "backing vocals"],
+  [/\bteclados?\b/gi, "keys"],
+  [/\s+y\s+/gi, " & "],
+];
+
+/** Rol de un integrante (guardado en español) en el idioma activo: "Bajo y guturales" → "Bass & screams". */
+export function memberRole(lang: string, role: string): string {
+  if (lang !== "en") return role;
+  const en = ROLE_EN.reduce((r, [from, to]) => r.replace(from, to), role);
+  return en.charAt(0).toUpperCase() + en.slice(1);
+}
+
 /** Descripción de un descuento aplicado (la cotización trae tipo y valor, no texto). */
 export function describeDiscount(dict: Dictionary, d: { type?: string; value?: number; label?: string }): string {
   if (d.type === "PERCENT") return fill(dict.cart.discountPercent, { n: d.value ?? 0 });

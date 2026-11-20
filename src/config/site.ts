@@ -28,6 +28,8 @@ export const siteConfig = {
     { key: "youtube", label: "YouTube", short: "YT", url: "https://www.youtube.com/@sleeponadreamofficial" },
     { key: "spotify", label: "Spotify", short: "SP", url: "https://open.spotify.com/artist/3wfBf4MLEJBUrY6vAuM1c0" },
   ] as Array<{ key: string; label: string; short: string; url: string | null }>,
+  /** Foto grupal oficial (apertura de "Nosotros"). Foto: Noridexs. */
+  groupPhoto: "/images/band/grupo.jpg",
   /** Perfil oficial de artista en Spotify (reproductor integrado en /music). */
   spotifyArtistId: "3wfBf4MLEJBUrY6vAuM1c0",
   /** Perfil de artista en Apple Music (la sincronización de lanzamientos lee su catálogo). */

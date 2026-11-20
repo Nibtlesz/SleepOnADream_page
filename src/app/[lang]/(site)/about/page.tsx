@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { SocialLinks } from "@/components/layout/SocialLinks";
 import { CoverArt, PhotoPlaceholder } from "@/components/ui/Art";
 import { ButtonLink } from "@/components/ui/Button";
@@ -6,6 +7,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SampleBadge } from "@/components/ui/SampleBadge";
 import { siteConfig } from "@/config/site";
 import { LocaleLink as Link } from "@/i18n/LocaleLink";
+import { memberRole } from "@/i18n";
 import { getI18n, pageAlternates } from "@/i18n/server";
 import { getBandMembers, getReleases } from "@/server/queries/content";
 
@@ -22,14 +24,21 @@ function Pending({ children }: { children: React.ReactNode }) {
 }
 
 export default async function AboutPage() {
-  const { t } = await getI18n();
+  const { lang, t } = await getI18n();
   const a = t.about;
   const [members, releases] = await Promise.all([getBandMembers(), getReleases()]);
   return (
     <>
       {/* Apertura editorial */}
       <header className="relative min-h-[80svh] overflow-hidden">
-        <PhotoPlaceholder label={a.promoPhoto} className="absolute inset-0" />
+        <Image
+          src={siteConfig.groupPhoto}
+          alt={siteConfig.name}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[50%_35%]"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
         <div className="container-site relative flex min-h-[80svh] flex-col justify-end pb-16 md:pb-24">
           <p className="eyebrow mb-5 flex items-center gap-3"><span className="h-px w-8 bg-blood" aria-hidden />{a.eyebrow}</p>
@@ -80,11 +89,17 @@ export default async function AboutPage() {
                 <Reveal delay={i * 0.06}>
                   <figure className="group">
                     <div className="overflow-hidden border border-smoke">
-                      <PhotoPlaceholder label={a.portraitPending} className="aspect-[3/4] grayscale transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+                      {m.photoUrl ? (
+                        <div className="relative aspect-[3/4] grayscale transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0">
+                          <Image src={m.photoUrl} alt={m.name} fill sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw" className="object-cover" />
+                        </div>
+                      ) : (
+                        <PhotoPlaceholder label={a.portraitPending} className="aspect-[3/4] grayscale transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0" />
+                      )}
                     </div>
                     <figcaption className="mt-4">
                       <p className="font-semibold">{m.name}</p>
-                      <p className="eyebrow mt-1">{m.role}</p>
+                      <p className="eyebrow mt-1">{memberRole(lang, m.role)}</p>
                     </figcaption>
                   </figure>
                 </Reveal>
