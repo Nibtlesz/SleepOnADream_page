@@ -35,10 +35,15 @@ export const siteConfig = {
   /** Perfil de artista en Apple Music (la sincronización de lanzamientos lee su catálogo). */
   appleMusicArtistId: "1418098370",
   contact: {
-    booking: null as string | null, // p. ej. "booking@dominio.mx"
-    press: null as string | null,
+    booking: "hmproducciones.oficial@gmail.com" as string | null,
+    /** Quién atiende las contrataciones (se muestra junto al correo). */
+    bookingContact: "Mariana Hernandez" as string | null,
+    press: "sleepona@gmail.com" as string | null,
+    /** Sin correo de tienda por ahora: el canal no se muestra en Contacto. */
     store: null as string | null,
   },
+  /** Kit de prensa descargable (public/press/). */
+  epkUrl: "/press/sleep-on-a-dream-epk.pdf",
   legal: [
     { slug: "privacidad", label: "Aviso de privacidad" },
     { slug: "terminos", label: "Términos y condiciones" },

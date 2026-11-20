@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Download } from "lucide-react";
 import { SocialLinks } from "@/components/layout/SocialLinks";
 import { CoverArt, PhotoPlaceholder } from "@/components/ui/Art";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
-import { SampleBadge } from "@/components/ui/SampleBadge";
 import { siteConfig } from "@/config/site";
 import { LocaleLink as Link } from "@/i18n/LocaleLink";
 import { memberRole } from "@/i18n";
@@ -16,10 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.meta.about.title, description: t.meta.about.description, alternates: await pageAlternates("/about") };
 }
 
-/** Bloque de texto pendiente: deja claro que el contenido oficial aún no se ha cargado. */
-function Pending({ children }: { children: React.ReactNode }) {
+/** Foto de la galería: ocupa la celda completa y se recorta según `focus`. */
+function GalleryPhoto({ src, alt, className, sizes, focus = "50% 50%" }: { src: string; alt: string; className: string; sizes: string; focus?: string }) {
   return (
-    <p className="border-l-2 border-dashed border-ember/60 pl-4 text-mist italic">{children}</p>
+    <div className={`relative overflow-hidden bg-coal ${className}`}>
+      <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" style={{ objectPosition: focus }} />
+    </div>
   );
 }
 
@@ -50,22 +52,21 @@ export default async function AboutPage() {
       <section className="container-site grid gap-12 py-24 md:grid-cols-12 md:py-32" aria-labelledby="historia">
         <Reveal className="md:col-span-4">
           <h2 id="historia" className="display text-5xl md:text-6xl">{a.history}</h2>
-          <SampleBadge className="mt-4" label={t.common.pendingText} />
         </Reveal>
         <Reveal delay={0.1} className="space-y-6 text-lg leading-relaxed md:col-span-7 md:col-start-6">
           <p className="display text-3xl leading-tight text-bone md:text-4xl">
             {a.historyLead}
           </p>
-          <Pending>{a.historyPending}</Pending>
+          <p className="text-mist">{a.historyText}</p>
         </Reveal>
       </section>
 
       {/* Galería editorial */}
-      <section aria-label={a.gallery} className="container-site grid grid-cols-2 gap-3 md:grid-cols-12 md:gap-4">
-        <PhotoPlaceholder className="col-span-2 aspect-[16/10] md:col-span-8" label={a.promoPhoto} />
-        <PhotoPlaceholder tone="red" className="aspect-[3/4] md:col-span-4 md:aspect-auto" label={a.live} />
-        <PhotoPlaceholder tone="red" className="aspect-[3/4] md:col-span-4" label={a.portrait} />
-        <PhotoPlaceholder className="col-span-2 aspect-[16/10] md:col-span-8 md:aspect-auto" label={a.studio} />
+      <section aria-label={a.gallery} className="container-site grid gap-3 md:grid-cols-12 md:gap-4">
+        <GalleryPhoto src="/images/band/promo.jpg" alt={a.promoPhoto} className="aspect-[3/2] md:col-span-8" sizes="(min-width: 768px) 66vw, 100vw" />
+        <GalleryPhoto src="/images/band/retrato.jpg" alt={a.portrait} focus="50% 65%" className="aspect-[4/5] md:col-span-4 md:aspect-auto" sizes="(min-width: 768px) 33vw, 100vw" />
+        <GalleryPhoto src="/images/band/en-vivo.jpg" alt={a.live} className="aspect-[3/2] md:col-span-6" sizes="(min-width: 768px) 50vw, 100vw" />
+        <GalleryPhoto src="/images/band/grabacion.jpg" alt={a.studio} className="aspect-[3/2] md:col-span-6" sizes="(min-width: 768px) 50vw, 100vw" />
       </section>
 
       {/* Biografía oficial */}
@@ -73,9 +74,8 @@ export default async function AboutPage() {
         <Reveal className="md:col-span-4">
           <h2 id="bio" className="display text-5xl md:text-6xl">{a.bio}</h2>
         </Reveal>
-        <Reveal delay={0.1} className="space-y-5 leading-relaxed md:col-span-7 md:col-start-6">
-          <Pending>{a.bioPending}</Pending>
-          <p className="text-sm text-fog">{a.bioPanel}</p>
+        <Reveal delay={0.1} className="space-y-5 leading-relaxed text-mist md:col-span-7 md:col-start-6">
+          {a.bioText.map((paragraph) => <p key={paragraph.slice(0, 32)}>{paragraph}</p>)}
         </Reveal>
       </section>
 
@@ -136,19 +136,24 @@ export default async function AboutPage() {
           </div>
           <dl className="grid gap-px self-end border border-smoke bg-smoke">
             {[
-              [a.booking, siteConfig.contact.booking],
-              [a.pressMedia, siteConfig.contact.press],
-            ].map(([label, email]) => (
+              { label: a.booking, email: siteConfig.contact.booking, person: siteConfig.contact.bookingContact },
+              { label: a.pressMedia, email: siteConfig.contact.press, person: null },
+            ].map(({ label, email, person }) => (
               <div key={label} className="bg-coal p-6">
                 <dt className="eyebrow">{label}</dt>
-                <dd className="mt-2 text-lg">
+                <dd className="mt-2 text-lg [overflow-wrap:anywhere]">
                   {email ? <a href={`mailto:${email}`} className="hover:text-ember">{email}</a> : <span className="text-iron">{t.common.pendingEmail}</span>}
+                  {person && <span className="mt-1 block text-sm text-fog">{person} · {a.manager}</span>}
                 </dd>
               </div>
             ))}
             <div className="bg-coal p-6">
               <dt className="eyebrow">{a.epk}</dt>
-              <dd className="mt-2 text-sm text-iron">{a.epkPending}</dd>
+              <dd className="mt-3">
+                <a href={siteConfig.epkUrl} download className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-bone hover:text-ember">
+                  <Download className="h-4 w-4" aria-hidden /> {a.epkDownload}
+                </a>
+              </dd>
             </div>
           </dl>
         </div>

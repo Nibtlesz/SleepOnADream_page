@@ -13,11 +13,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ContactPage() {
   const { t } = await getI18n();
+  // Solo se muestran los canales con correo (el de tienda está oculto mientras no exista).
   const channels = [
-    [t.contact.channels.booking, siteConfig.contact.booking],
-    [t.contact.channels.press, siteConfig.contact.press],
-    [t.contact.channels.store, siteConfig.contact.store],
-  ] as const;
+    { label: t.contact.channels.booking, email: siteConfig.contact.booking, person: siteConfig.contact.bookingContact },
+    { label: t.contact.channels.press, email: siteConfig.contact.press, person: null },
+    { label: t.contact.channels.store, email: siteConfig.contact.store, person: null },
+  ].filter((c): c is typeof c & { email: string } => Boolean(c.email));
 
   return (
     <>
@@ -28,11 +29,12 @@ export default async function ContactPage() {
         </section>
         <aside className="space-y-12 lg:col-span-4 lg:col-start-9">
           <dl className="space-y-6">
-            {channels.map(([label, email]) => (
+            {channels.map(({ label, email, person }) => (
               <div key={label} className="border-b border-smoke pb-6">
                 <dt className="eyebrow">{label}</dt>
-                <dd className="mt-2">
-                  {email ? <a className="text-lg hover:text-ember" href={`mailto:${email}`}>{email}</a> : <span className="text-iron">{t.common.pendingEmail}</span>}
+                <dd className="mt-2 [overflow-wrap:anywhere]">
+                  <a className="text-lg hover:text-ember" href={`mailto:${email}`}>{email}</a>
+                  {person && <span className="mt-1 block text-sm text-fog">{person} · {t.about.manager}</span>}
                 </dd>
               </div>
             ))}
