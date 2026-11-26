@@ -104,7 +104,7 @@ const en: Dictionary = {
     storeTitle: ["Official", "merch"],
     storePitch: "T-shirts, hoodies, physical music and exclusive editions. Buy directly here, with shipping across Mexico.",
     shopNow: "Shop now",
-    campaignImage: "Sample campaign image",
+    campaignImage: "Sleep On A Dream official merch: tees, hoodies, caps and tote bags",
     newsEyebrow: "News",
     newsTitle: "Latest news",
     community: "Community",

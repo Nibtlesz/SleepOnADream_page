@@ -17,6 +17,8 @@ export interface CartItem {
   variantLabel: string;
   unitPrice: number;
   art: ArtKind;
+  /** Foto del producto (si tiene); si no, se muestra la ilustración. */
+  image?: string | null;
   quantity: number;
   maxStock: number;
 }

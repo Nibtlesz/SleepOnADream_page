@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { Hero } from "@/components/home/Hero";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
@@ -6,7 +7,7 @@ import { SocialLinks } from "@/components/layout/SocialLinks";
 import { StreamingLinks } from "@/components/music/StreamingLinks";
 import { ProductCard } from "@/components/store/ProductCard";
 import { ShowRow } from "@/components/tour/ShowRow";
-import { CoverArt, PhotoPlaceholder } from "@/components/ui/Art";
+import { CoverArt } from "@/components/ui/Art";
 import { ButtonLink } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { SampleBadge } from "@/components/ui/SampleBadge";
@@ -90,11 +91,20 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-t border-smoke py-24 md:py-32" aria-labelledby="store-title">
         <div className="container-site">
           <Reveal>
-            <div className="relative mb-16 grid overflow-hidden border border-smoke md:grid-cols-2">
-              <PhotoPlaceholder tone="red" label={t.home.campaignImage} className="min-h-72 md:min-h-[28rem]" />
-              <div className="flex flex-col justify-center bg-ash p-8 md:p-14">
+            <div className="relative mb-16 grid overflow-hidden border border-smoke md:grid-cols-12">
+              {/* La portada es un diseño con texto: se muestra completa (sin recortar) */}
+              <div className="relative aspect-[3/2] overflow-hidden bg-[#0b0b0c] md:col-span-7 md:aspect-auto md:min-h-[24rem]">
+                <Image
+                  src="/images/merch/portada-merch.webp"
+                  alt={t.home.campaignImage}
+                  fill
+                  sizes="(min-width: 768px) 58vw, 100vw"
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex flex-col justify-center bg-ash p-8 md:col-span-5 md:p-12">
                 <p className="eyebrow mb-4">{t.home.storeEyebrow}</p>
-                <h2 id="store-title" className="display font-script pt-[0.15em] leading-[1.05] text-5xl md:text-7xl">
+                <h2 id="store-title" className="display font-script pt-[0.15em] leading-[1.05] text-5xl lg:text-6xl xl:text-7xl">
                   {t.home.storeTitle[0]} <span className="text-ember">{t.home.storeTitle[1]}</span>
                 </h2>
                 <p className="mt-5 max-w-md text-mist">
