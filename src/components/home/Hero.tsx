@@ -92,7 +92,7 @@ export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample:
           <ButtonLink href="/music#ultimo-lanzamiento" size="lg">
             <Headphones className="h-4 w-4" /> {t.home.listenNow}
           </ButtonLink>
-          <ButtonLink href="/videos" size="lg" variant="outline">
+          <ButtonLink href="/videos#destacado" size="lg" variant="outline">
             <Play className="h-4 w-4" /> {t.home.watchVideo}
           </ButtonLink>
           <ButtonLink href="/store" size="lg" variant="ghost" className="underline decoration-ember decoration-2 underline-offset-8">

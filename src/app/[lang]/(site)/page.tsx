@@ -58,7 +58,7 @@ export default async function HomePage() {
               <StreamingLinks links={latest.links} className="mt-8" />
               <div className="mt-8 flex flex-wrap gap-3">
                 <ButtonLink href="/music#ultimo-lanzamiento">{t.home.listen}</ButtonLink>
-                <ButtonLink href="/videos" variant="outline">{t.home.watchVideo}</ButtonLink>
+                <ButtonLink href="/videos#destacado" variant="outline">{t.home.watchVideo}</ButtonLink>
               </div>
             </Reveal>
           </div>
