@@ -81,6 +81,7 @@ export const officialReleases: Release[] = [
     tracks: [["Supernova", "3:54"]],
     spotifyId: "5D4CMw51liWhh0iyTqRdLb",
     apple: "supernova-single/6779373419",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_m9aj6MAET58JfaGks7mst8ZgICMi0Ez4k",
   }),
   release({
     slug: "un-mejor-final",
@@ -92,6 +93,7 @@ export const officialReleases: Release[] = [
     tracks: [["Un Mejor Final", "3:33"]],
     spotifyId: "6vvDVff5QFCqtsxQqsqsCZ",
     apple: "un-mejor-final-single/1875328799",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_khO1qfi2CEnGqSHUGA3sCFphicPZxwoE8",
   }),
   release({
     slug: "salvame",
@@ -103,6 +105,7 @@ export const officialReleases: Release[] = [
     tracks: [["Sálvame (feat. Bam Bautista)", "4:24"]],
     spotifyId: "2L6yYjFyIW2LfKto3SUFyD",
     apple: "s%C3%A1lvame-feat-bam-bautista-single/1828791893",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_mBXjwcYWSTdKx1hZxDa7Qq-o7OJiH6whE",
   }),
   release({
     slug: "amor-regresa",
@@ -114,6 +117,7 @@ export const officialReleases: Release[] = [
     tracks: [["Amor Regresa", "3:37"]],
     spotifyId: "2V71r1i7Y2ay400yad2tr4",
     apple: "amor-regresa-single/1810740309",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_l-Gk8EY08idYRizTEsiPDDztIGHCuRTbk",
   }),
   release({
     slug: "fragmentos-instrumental",
@@ -132,6 +136,7 @@ export const officialReleases: Release[] = [
     ],
     spotifyId: "2mnDQ8obSCaEUIl6pdcJKo",
     apple: "fragmentos-instrumental-ep/1809414908",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_nx6ePt2hZaoAZdBqMnMWXyzagetrsWPWQ",
   }),
   release({
     slug: "fragmentos",
@@ -164,7 +169,9 @@ export const officialReleases: Release[] = [
       ["Cicatrices (Live)", "3:04"],
       ["Voces (Live)", "4:48"],
     ],
+    spotifyId: "4PEe4e5tnh71bXXvPyg0da",
     apple: "live-from-home-single/1810748176",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_nI31g1EKMyZ_DPwwtp-xBoE_J378kBa9M",
   }),
   release({
     slug: "antes-de-todo-despues-de-ti",
@@ -176,6 +183,7 @@ export const officialReleases: Release[] = [
     tracks: [["Antes de todo, después de ti", "4:11"]],
     spotifyId: "1PGuR6vFsB2fcfHU7w2dAE",
     apple: "antes-de-todo-despu%C3%A9s-de-ti-single/1810767309",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_llDvjVqM0AOczt8z7HM1WwSKZLqT6UcSk",
   }),
   release({
     slug: "voces",
@@ -187,6 +195,7 @@ export const officialReleases: Release[] = [
     tracks: [["Voces", "4:47"]],
     spotifyId: "49GLwKIEzx6jVYvAKEHSXd",
     apple: "voces-single/1808250485",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_ndgMV3rluLeFPm1ydDR6geSG_IT2cIegw",
   }),
   release({
     slug: "in-the-end",
@@ -196,7 +205,9 @@ export const officialReleases: Release[] = [
     description: "Cover de Linkin Park. ℗ 2020 Darklex Records.",
     cover: APPLE_COVER("Music221/v4/3d/47/aa/3d47aafb-5034-4ee2-fdc7-108b778e369a/195398114252_cover.jpg"),
     tracks: [["In the End", "3:37"]],
+    spotifyId: "69BSr4FPNLYQPINb14PKop",
     apple: "in-the-end-single/1810767434",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_k4CbmF5OtF0otBwHdhrP54uCQP828aGV4",
   }),
   release({
     slug: "renacer",
@@ -208,6 +219,7 @@ export const officialReleases: Release[] = [
     tracks: [["Renacer", "5:33"]],
     spotifyId: "39xHv8hwynIsOlrISuJmwo",
     apple: "renacer-single/1808102610",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_lt9R1kOFe6nzUIGg-60iBNPz0UtAcK7h8",
   }),
   release({
     slug: "cicatrices",
@@ -219,5 +231,6 @@ export const officialReleases: Release[] = [
     tracks: [["Cicatrices", "3:01"]],
     spotifyId: "12IaFTeBDqSUEO3NXYyRDA",
     apple: "cicatrices-single/1809417753",
+    youtubeMusic: "https://music.youtube.com/playlist?list=OLAK5uy_kWJTo625E9HIb0ct2cTrxn8rRjZpRWgO4",
   }),
 ];
