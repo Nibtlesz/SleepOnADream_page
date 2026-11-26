@@ -90,7 +90,7 @@ export function VideoGallery({ videos }: { videos: Video[] }) {
 
   return (
     <div>
-      <section aria-label={t.videos.featured} className="mb-16">
+      <section id="destacado" aria-label={t.videos.featured} className="mb-16 scroll-mt-24">
         <div className="border border-smoke bg-coal">
           <Player key={current.slug} video={current} />
         </div>

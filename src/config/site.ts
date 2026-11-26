@@ -42,6 +42,11 @@ export const siteConfig = {
     /** Sin correo de tienda por ahora: el canal no se muestra en Contacto. */
     store: null as string | null,
   },
+  /** Secciones opcionales del sitio. */
+  features: {
+    /** Novedades en la portada: oculta (la banda no la usará por ahora). El código se conserva. */
+    news: false,
+  },
   /** Kit de prensa descargable (public/press/). */
   epkUrl: "/press/sleep-on-a-dream-epk.pdf",
   legal: [

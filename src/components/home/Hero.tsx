@@ -2,16 +2,22 @@
 
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { Play, Headphones } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Logo } from "@/components/layout/Logo";
 import { SampleBadge } from "@/components/ui/SampleBadge";
 import { useI18n } from "@/i18n/client";
 
+/** Fondo de la portada: teaser oficial sin audio (720p en teléfono, 1080p en pantallas grandes). */
+const HERO_VIDEO = {
+  poster: "/images/portada-poster.jpg",
+  small: "/video/portada-720.mp4",
+  large: "/video/portada-1080.mp4",
+};
+
 /**
- * Portada inmersiva. El fondo es una escena CSS (niebla, luz roja, viñeta);
- * cuando exista material oficial se reemplaza por <video> en loop (muted,
- * playsInline, poster optimizado) o por una imagen con <Image priority>.
+ * Portada inmersiva con el teaser en loop (sin audio). Con "reducir movimiento" activado
+ * o con ahorro de datos, se queda en la imagen fija.
  */
 export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample: boolean }) {
   const { t } = useI18n();
@@ -20,6 +26,17 @@ export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample:
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", reduce ? "0%" : "25%"]);
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const video = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const v = video.current;
+    if (!v) return;
+    // `muted` como propiedad: algunos navegadores (iOS) no reproducen solos si solo viene en el HTML.
+    v.muted = true;
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (reduce || saveData) v.pause();
+    else v.play().catch(() => {});
+  }, [reduce]);
 
   const intro = (delay: number) =>
     reduce
@@ -33,13 +50,23 @@ export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample:
   return (
     <section ref={ref} className="relative isolate flex min-h-[100svh] items-end overflow-hidden" aria-label={t.home.hero}>
       {/* Escena de fondo */}
-      <motion.div style={{ y }} className="absolute inset-0 -z-10" aria-hidden>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_70%_35%,#3a050b_0%,#120204_45%,#070708_80%)]" />
-        <div className="absolute -inset-[20%] animate-drift bg-[radial-gradient(ellipse_40%_30%_at_30%_60%,rgba(236,235,232,0.07),transparent_70%),radial-gradient(ellipse_35%_25%_at_75%_70%,rgba(236,235,232,0.05),transparent_70%)] blur-2xl" />
-        <div className="absolute -inset-[20%] animate-drift-slow bg-[radial-gradient(ellipse_30%_40%_at_60%_30%,rgba(224,38,47,0.22),transparent_70%)] blur-3xl" />
-        <div className="absolute top-[18%] right-[12%] h-[38vmin] w-[38vmin] animate-flicker rounded-full bg-[radial-gradient(circle,rgba(224,38,47,0.5)_0%,rgba(165,15,26,0.15)_45%,transparent_70%)] blur-xl" />
-        {/* Líneas verticales tipo luz de escenario */}
-        <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent_0_120px,rgba(236,235,232,0.025)_120px_121px)]" />
+      <motion.div style={{ y }} className="absolute inset-0 -z-10 bg-ink" aria-hidden>
+        <video
+          ref={video}
+          className="absolute inset-0 h-full w-full object-cover"
+          poster={HERO_VIDEO.poster}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+        >
+          <source src={HERO_VIDEO.large} type="video/mp4" media="(min-width: 768px)" />
+          <source src={HERO_VIDEO.small} type="video/mp4" />
+        </video>
+        {/* Oscurece el video para que el logo y los botones se lean bien */}
+        <div className="absolute inset-0 bg-ink/45" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent" />
         <div className="absolute inset-0 shadow-[inset_0_0_200px_80px_#070708]" />
       </motion.div>
@@ -65,7 +92,7 @@ export function Hero({ latestTitle, isSample }: { latestTitle: string; isSample:
           <ButtonLink href="/music#ultimo-lanzamiento" size="lg">
             <Headphones className="h-4 w-4" /> {t.home.listenNow}
           </ButtonLink>
-          <ButtonLink href="/videos" size="lg" variant="outline">
+          <ButtonLink href="/videos#destacado" size="lg" variant="outline">
             <Play className="h-4 w-4" /> {t.home.watchVideo}
           </ButtonLink>
           <ButtonLink href="/store" size="lg" variant="ghost" className="underline decoration-ember decoration-2 underline-offset-8">

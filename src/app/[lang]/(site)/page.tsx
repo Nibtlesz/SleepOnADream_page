@@ -12,6 +12,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { SampleBadge } from "@/components/ui/SampleBadge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { INTL_LOCALE } from "@/i18n/config";
+import { siteConfig } from "@/config/site";
 import { getI18n, pageAlternates } from "@/i18n/server";
 import { formatDate } from "@/lib/format";
 import { getFeaturedProducts } from "@/server/queries/catalog";
@@ -28,7 +29,7 @@ export default async function HomePage() {
     getLatestRelease(),
     getShows(),
     getFeaturedProducts(4),
-    getNews(3),
+    siteConfig.features.news ? getNews(3) : Promise.resolve([]),
   ]);
 
   return (
@@ -57,7 +58,7 @@ export default async function HomePage() {
               <StreamingLinks links={latest.links} className="mt-8" />
               <div className="mt-8 flex flex-wrap gap-3">
                 <ButtonLink href="/music#ultimo-lanzamiento">{t.home.listen}</ButtonLink>
-                <ButtonLink href="/videos" variant="outline">{t.home.watchVideo}</ButtonLink>
+                <ButtonLink href="/videos#destacado" variant="outline">{t.home.watchVideo}</ButtonLink>
               </div>
             </Reveal>
           </div>
@@ -118,7 +119,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Novedades ──────────────────────────────────────── */}
+      {/* ── Novedades (oculta con siteConfig.features.news) ─── */}
+      {siteConfig.features.news && news.length > 0 && (
       <section className="border-t border-smoke bg-coal py-24 md:py-32" aria-labelledby="news-title">
         <div className="container-site">
           <Reveal>
@@ -145,6 +147,7 @@ export default async function HomePage() {
           </ul>
         </div>
       </section>
+      )}
 
       {/* ── Newsletter + redes ─────────────────────────────── */}
       <section className="relative overflow-hidden border-t border-smoke py-24 md:py-36" aria-labelledby="nl-title">
