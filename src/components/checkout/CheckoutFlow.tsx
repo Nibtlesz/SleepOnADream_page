@@ -8,7 +8,7 @@ import type { BrickSubmission } from "./MercadoPagoBrick";
 import { ShippingOptions } from "@/components/store/ShippingOptions";
 import { TotalsList } from "@/components/store/TotalsList";
 import { useCartQuote } from "@/components/store/useCartQuote";
-import { ProductArt } from "@/components/ui/Art";
+import { ProductThumb } from "@/components/store/ProductThumb";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { MX_STATES } from "@/config/store";
 import { describeDiscount, fill, k, msg } from "@/i18n";
@@ -415,7 +415,7 @@ export function CheckoutFlow({ paymentOptions }: { paymentOptions: PaymentOption
               <ul className="divide-y divide-smoke border-y border-smoke">
                 {items.map((i) => (
                   <li key={i.variantId} className="flex items-center gap-4 py-4">
-                    <div className="w-16 shrink-0 border border-smoke"><ProductArt kind={i.art} /></div>
+                    <div className="w-16 shrink-0 border border-smoke"><ProductThumb image={i.image} alt={i.name} kind={i.art} sizes="64px" /></div>
                     <div className="min-w-0 flex-1 text-sm">
                       <p className="truncate font-semibold">{i.name}</p>
                       <p className="text-xs text-fog">{i.variantLabel} · {t.checkout.quantity} {i.quantity}</p>
@@ -557,7 +557,7 @@ export function CheckoutFlow({ paymentOptions }: { paymentOptions: PaymentOption
           {items.map((i) => (
             <li key={i.variantId} className="flex items-center gap-3 text-sm">
               <div className="relative w-12 shrink-0 border border-smoke">
-                <ProductArt kind={i.art} />
+                <ProductThumb image={i.image} alt={i.name} kind={i.art} sizes="48px" />
                 <span className="absolute -top-2 -right-2 grid h-5 min-w-5 place-items-center rounded-full bg-iron px-1 text-[0.6rem] font-bold">{i.quantity}</span>
               </div>
               <div className="min-w-0 flex-1">

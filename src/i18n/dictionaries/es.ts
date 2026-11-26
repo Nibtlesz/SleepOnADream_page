@@ -103,7 +103,7 @@ const es = {
     storeTitle: ["Merch", "oficial"],
     storePitch: "Playeras, sudaderas, música física y ediciones exclusivas. Compra directo aquí, con envío a todo México.",
     shopNow: "Comprar ahora",
-    campaignImage: "Imagen de campaña de ejemplo",
+    campaignImage: "Merch oficial de Sleep On A Dream: playeras, hoodies, gorras y tote bags",
     newsEyebrow: "Novedades",
     newsTitle: "Lo más reciente",
     community: "Comunidad",

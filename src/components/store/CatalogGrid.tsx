@@ -24,7 +24,12 @@ export function CatalogGrid({ products, categories }: { products: Product[]; cat
     return list;
   }, [products, category, sort, onlyAvailable]);
 
-  const tabs = [{ slug: "all", name: t.store.all }, ...categories.map((c) => ({ ...c, name: categoryName(t, c.slug, c.name) }))];
+  // Solo categorías que tienen productos a la venta (sin pestañas vacías).
+  const used = new Set(products.map((p) => p.category.slug));
+  const tabs = [
+    { slug: "all", name: t.store.all },
+    ...categories.filter((c) => used.has(c.slug)).map((c) => ({ ...c, name: categoryName(t, c.slug, c.name) })),
+  ];
 
   return (
     <>

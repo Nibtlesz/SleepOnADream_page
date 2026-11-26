@@ -10,6 +10,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { sampleCategories, sampleProducts } from "../src/data/sample/catalog";
 import { officialMembers } from "../src/data/official/members";
+import { officialProducts } from "../src/data/official/products";
 import { officialReleases } from "../src/data/official/releases";
 import { officialShows } from "../src/data/official/shows";
 import { officialVideos } from "../src/data/official/videos";
@@ -28,9 +29,10 @@ async function main() {
   }
   const cats = Object.fromEntries((await db.category.findMany()).map((c) => [c.slug, c.id]));
 
-  // Productos y variantes (se conservan los IDs de variante para no romper carritos existentes)
+  // Productos de ejemplo: se conservan OCULTOS (borrador) ahora que hay merch oficial.
+  // (se conservan los IDs de variante para no romper carritos existentes)
   for (const p of sampleProducts) {
-    const status = p.status === "SOLD_OUT" ? "ACTIVE" : p.status;
+    const status = "DRAFT" as const;
     const data = {
       name: p.name,
       description: p.description,
@@ -57,6 +59,36 @@ async function main() {
       where: { slug: p.slug },
       data: { related: { set: p.relatedSlugs.map((slug) => ({ slug })) } },
     });
+  }
+
+  // Merch oficial: se crea o actualiza por slug. El inventario solo se fija al crear cada talla,
+  // para que volver a correr el seed no reponga piezas vendidas.
+  for (const p of officialProducts) {
+    const data = {
+      name: p.name,
+      description: p.description,
+      basePrice: p.basePrice,
+      compareAt: p.compareAt,
+      status: "ACTIVE" as const,
+      isExclusive: p.isExclusive,
+      isBundle: p.isBundle,
+      isSample: false,
+      art: p.art,
+      categoryId: cats[p.category.slug],
+    };
+    const product = await db.product.upsert({ where: { slug: p.slug }, create: { slug: p.slug, ...data }, update: data });
+    await db.productImage.deleteMany({ where: { productId: product.id } });
+    await db.productImage.createMany({ data: p.images.map((img, position) => ({ productId: product.id, url: img.url, alt: img.alt, position })) });
+    for (const v of p.variants) {
+      await db.productVariant.upsert({
+        where: { id: v.id },
+        create: { id: v.id, productId: product.id, sku: v.sku, size: v.size, color: v.color, price: v.price, stock: v.stock },
+        update: { sku: v.sku, size: v.size, color: v.color, price: v.price },
+      });
+    }
+  }
+  for (const p of officialProducts) {
+    await db.product.update({ where: { slug: p.slug }, data: { related: { set: p.relatedSlugs.map((slug) => ({ slug })) } } });
   }
 
   // Descuentos de ejemplo

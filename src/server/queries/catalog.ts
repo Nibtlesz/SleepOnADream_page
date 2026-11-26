@@ -5,7 +5,8 @@
  */
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
-import { sampleCategories, sampleProducts } from "@/data/sample/catalog";
+import { officialProducts } from "@/data/official/products";
+import { sampleCategories } from "@/data/sample/catalog";
 import { getDb, isDbConfigured } from "@/lib/db";
 import type { ArtKind, Category, Product } from "@/lib/types";
 import { committedQty } from "@/server/orders/memory-state";
@@ -60,7 +61,7 @@ export async function getProducts(): Promise<Product[]> {
   "use cache";
   cacheLife("minutes"); // el inventario cambia con cada venta
   cacheTag(CATALOG_TAG);
-  if (!isDbConfigured) return sampleProducts;
+  if (!isDbConfigured) return officialProducts;
   return (await fetchDbProducts()).map(toProduct);
 }
 
@@ -107,7 +108,7 @@ export async function findVariantsForQuote(variantIds: string[]) {
     }
     return map;
   }
-  for (const product of sampleProducts) {
+  for (const product of officialProducts) {
     for (const variant of product.variants) {
       if (variantIds.includes(variant.id)) {
         const stock = Math.max(variant.stock - committedQty(variant.id), 0);

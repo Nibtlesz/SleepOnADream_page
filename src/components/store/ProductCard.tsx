@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductArt } from "@/components/ui/Art";
+import { ProductThumb } from "./ProductThumb";
 import { useI18n } from "@/i18n/client";
 import { LocaleLink as Link } from "@/i18n/LocaleLink";
 import { formatMXN } from "@/lib/format";
@@ -24,9 +25,14 @@ export function ProductCard({ product, priority = false }: { product: Product; p
     <Link href={`/store/${product.slug}`} className="group block" prefetch={priority ? true : undefined}>
       <div className="relative overflow-hidden border border-smoke bg-ash transition-colors duration-500 group-hover:border-iron">
         <div className="transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-[1.04]">
-          <ProductArt kind={product.art} color={colors[0]} />
+          <ProductThumb image={product.images[0]?.url} alt={product.images[0]?.alt ?? product.name} kind={product.art} color={colors[0]} priority={priority} />
         </div>
-        {colors[1] && (
+        {/* Al pasar el mouse: segunda foto (p. ej. el frente) o el otro color */}
+        {product.images[1] ? (
+          <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" aria-hidden>
+            <ProductThumb image={product.images[1].url} alt="" kind={product.art} />
+          </div>
+        ) : colors[1] && (
           <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" aria-hidden>
             <ProductArt kind={product.art} color={colors[1]} />
           </div>

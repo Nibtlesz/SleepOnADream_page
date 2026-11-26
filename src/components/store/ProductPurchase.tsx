@@ -3,6 +3,7 @@
 import { Check, ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductArt } from "@/components/ui/Art";
+import { ProductThumb } from "./ProductThumb";
 import { Button } from "@/components/ui/Button";
 import { storeConfig } from "@/config/store";
 import { categoryName, fill } from "@/i18n";
@@ -13,7 +14,7 @@ import type { Product } from "@/lib/types";
 import { useCart } from "@/store/cart";
 import { QuantityStepper } from "./QuantityStepper";
 
-const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "Única"];
+const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "2XL", "XXL", "Única"];
 
 /** Galería + selector de variantes (color / talla) + agregar al carrito. */
 export function ProductPurchase({ product }: { product: Product }) {
@@ -34,6 +35,7 @@ export function ProductPurchase({ product }: { product: Product }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [photo, setPhoto] = useState(0);
 
   const variant = product.variants.find((v) => (v.color ?? null) === color && (v.size ?? null) === size) ?? null;
   const stockFor = (c: string | null, s: string | null) =>
@@ -54,6 +56,7 @@ export function ProductPurchase({ product }: { product: Product }) {
         variantLabel: [variant.color, variant.size].filter(Boolean).join(" / "),
         unitPrice: price,
         art: product.art,
+        image: product.images[0]?.url ?? null,
         maxStock: variant.stock,
       },
       qty,
@@ -66,17 +69,49 @@ export function ProductPurchase({ product }: { product: Product }) {
     <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
       {/* Galería */}
       <div className="lg:col-span-7">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="border border-smoke sm:col-span-2">
-            <ProductArt kind={product.art} color={color} className="aspect-square" />
+        {product.images.length > 0 ? (
+          <div className="grid gap-3">
+            <div className="border border-smoke">
+              <ProductThumb
+                image={product.images[photo]?.url ?? product.images[0].url}
+                alt={product.images[photo]?.alt ?? product.name}
+                kind={product.art}
+                sizes="(min-width: 1024px) 55vw, 100vw"
+                priority
+              />
+            </div>
+            {product.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images.map((img, i) => (
+                  <button
+                    key={img.url}
+                    type="button"
+                    onClick={() => setPhoto(i)}
+                    aria-pressed={i === photo}
+                    aria-label={img.alt}
+                    className={cn("border transition-colors", i === photo ? "border-bone" : "border-smoke hover:border-iron")}
+                  >
+                    <ProductThumb image={img.url} alt="" kind={product.art} sizes="15vw" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {colors.filter((c) => c !== color).slice(0, 2).map((c) => (
-            <button key={c} type="button" onClick={() => setColor(c)} className="border border-smoke transition-colors hover:border-iron" aria-label={`${t.product.viewIn} ${c}`}>
-              <ProductArt kind={product.art} color={c} className="aspect-square" />
-            </button>
-          ))}
-        </div>
-        <p className="mt-3 text-xs text-fog">{t.product.artNote}</p>
+        ) : (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="border border-smoke sm:col-span-2">
+                <ProductArt kind={product.art} color={color} className="aspect-square" />
+              </div>
+              {colors.filter((c) => c !== color).slice(0, 2).map((c) => (
+                <button key={c} type="button" onClick={() => setColor(c)} className="border border-smoke transition-colors hover:border-iron" aria-label={`${t.product.viewIn} ${c}`}>
+                  <ProductArt kind={product.art} color={c} className="aspect-square" />
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-fog">{t.product.artNote}</p>
+          </>
+        )}
       </div>
 
       {/* Compra */}
