@@ -20,6 +20,8 @@ function release(r: {
   cover: string;
   tracks: Track[];
   spotifyId?: string;
+  /** Para sencillos con enlace a la canción en vez del álbum (open.spotify.com/track/…). */
+  spotifyTrackId?: string;
   apple: string;
   youtubeMusic?: string;
   isFeatured?: boolean;
@@ -37,11 +39,19 @@ function release(r: {
       return { position: i + 1, title, durationS: m * 60 + s };
     }),
     links: {
-      spotify: r.spotifyId ? `https://open.spotify.com/album/${r.spotifyId}` : null,
+      spotify: r.spotifyId
+        ? `https://open.spotify.com/album/${r.spotifyId}`
+        : r.spotifyTrackId
+          ? `https://open.spotify.com/track/${r.spotifyTrackId}`
+          : null,
       appleMusic: `https://music.apple.com/mx/album/${r.apple}`,
       youtubeMusic: r.youtubeMusic ?? null,
     },
-    embedUrl: r.spotifyId ? `https://open.spotify.com/embed/album/${r.spotifyId}?theme=0` : null,
+    embedUrl: r.spotifyId
+      ? `https://open.spotify.com/embed/album/${r.spotifyId}?theme=0`
+      : r.spotifyTrackId
+        ? `https://open.spotify.com/embed/track/${r.spotifyTrackId}?theme=0`
+        : null,
     isFeatured: r.isFeatured ?? false,
     isSample: false,
   };
@@ -54,10 +64,11 @@ export const officialReleases: Release[] = [
     type: "SINGLE",
     date: "2026-11-20",
     description: "Sencillo. ℗ 2026 Darklex Studios.",
-    // Aún no está en Spotify: agregar su enlace desde el panel cuando salga.
     cover: APPLE_COVER("Music211/v4/83/cb/8e/83cb8ead-5e33-70d0-dcdb-d8b9c52f665e/708208388097_cover.jpg"),
     tracks: [["Ruinas", "3:48"]],
+    spotifyTrackId: "2SadOvrGcJBCme02YqAJfi",
     apple: "ruinas-single/6827192499",
+    youtubeMusic: "https://music.youtube.com/watch?v=2I4wkmouAmc",
     isFeatured: true,
   }),
   release({

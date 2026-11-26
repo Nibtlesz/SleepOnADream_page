@@ -17,7 +17,8 @@ const video = (slug: string, title: string, youtubeId: string, date: string, isF
 });
 
 export const officialVideos: Video[] = [
-  video("un-mejor-final", "Un Mejor Final", "EhbBIlDL50g", "2026-03-27", true),
+  video("ruinas", "Ruinas", "8gLHU1LmRPI", "2026-11-23", true),
+  video("un-mejor-final", "Un Mejor Final", "EhbBIlDL50g", "2026-03-27"),
   video("salvame", "Sálvame ft. Bam Bautista", "PQ7KDoGEfCk", "2025-08-29"),
   video("amor-regresa", "Amor Regresa (Rock Cover - Los Askis)", "D3eLI_jb8wQ", "2025-03-28"),
   video("eclipse", "Eclipse", "7pFiAcev__s", "2023-12-07"),
